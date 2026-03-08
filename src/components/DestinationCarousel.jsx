@@ -8,10 +8,24 @@ export default function DestinationCarousel({ destinations }) {
     const [dragStartX, setDragStartX] = useState(0);
     const [dragDeltaX, setDragDeltaX] = useState(0);
     const containerRef = useRef(null);
+    const firstCardRef = useRef(null);
 
-    const CARD_WIDTH = typeof window !== "undefined" ? Math.min(340, window.innerWidth * 0.26) : 300;
     const CARD_GAP = 24;
-    const STEP = CARD_WIDTH + CARD_GAP;
+
+    // Measure the actual rendered card width so the step matches CSS exactly
+    const [cardWidth, setCardWidth] = useState(300);
+    useEffect(() => {
+        const measure = () => {
+            if (firstCardRef.current) {
+                setCardWidth(firstCardRef.current.getBoundingClientRect().width);
+            }
+        };
+        measure();
+        window.addEventListener("resize", measure);
+        return () => window.removeEventListener("resize", measure);
+    }, []);
+
+    const STEP = cardWidth + CARD_GAP;
 
     const prev = useCallback(() => setActiveIndex((i) => Math.max(0, i - 1)), []);
     const next = useCallback(
@@ -42,8 +56,8 @@ export default function DestinationCarousel({ destinations }) {
     const onMouseUp = useCallback(() => {
         if (!isDragging) return;
         setIsDragging(false);
-        if (dragDeltaX < -STEP * 0.3) next();
-        else if (dragDeltaX > STEP * 0.3) prev();
+        if (dragDeltaX < -STEP * 0.25) next();
+        else if (dragDeltaX > STEP * 0.25) prev();
         setDragDeltaX(0);
     }, [isDragging, dragDeltaX, STEP, next, prev]);
 
@@ -59,12 +73,15 @@ export default function DestinationCarousel({ destinations }) {
     const onTouchEnd = useCallback(() => {
         if (!isDragging) return;
         setIsDragging(false);
-        if (dragDeltaX < -STEP * 0.25) next();
-        else if (dragDeltaX > STEP * 0.25) prev();
+        if (dragDeltaX < -STEP * 0.2) next();
+        else if (dragDeltaX > STEP * 0.2) prev();
         setDragDeltaX(0);
     }, [isDragging, dragDeltaX, STEP, next, prev]);
 
     const translateX = isDragging ? -activeIndex * STEP + dragDeltaX : -activeIndex * STEP;
+
+    // Padding so the active card is centred in the viewport
+    const paddingX = `calc(50vw - ${cardWidth / 2}px)`;
 
     return (
         <section
@@ -76,7 +93,7 @@ export default function DestinationCarousel({ destinations }) {
             <div className="text-center mb-14 px-[5vw]">
                 <div
                     className="text-[11px] tracking-[5px] uppercase mb-4 font-semibold"
-                    style={{ fontFamily: "'Montserrat', sans-serif", color: "#ff6b2c" }}
+                    style={{ fontFamily: "'Montserrat', sans-serif", color: "#4169E1" }}
                 >
                     ✦ Discover the World
                 </div>
@@ -117,7 +134,7 @@ export default function DestinationCarousel({ destinations }) {
                     style={{ width: "10vw", background: "linear-gradient(to left, #0a0806, transparent)" }}
                 />
 
-                {/* Left arrow — overlaid */}
+                {/* Left arrow */}
                 <button
                     onClick={(e) => { e.stopPropagation(); prev(); }}
                     disabled={activeIndex === 0}
@@ -131,8 +148,8 @@ export default function DestinationCarousel({ destinations }) {
                         pointerEvents: activeIndex === 0 ? "none" : "auto",
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#ff6b2c";
-                        e.currentTarget.style.borderColor = "#ff6b2c";
+                        e.currentTarget.style.background = "#4169E1";
+                        e.currentTarget.style.borderColor = "#4169E1";
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.background = "rgba(10,8,6,0.5)";
@@ -142,7 +159,7 @@ export default function DestinationCarousel({ destinations }) {
                     ←
                 </button>
 
-                {/* Right arrow — overlaid */}
+                {/* Right arrow */}
                 <button
                     onClick={(e) => { e.stopPropagation(); next(); }}
                     disabled={activeIndex === destinations.length - 1}
@@ -156,8 +173,8 @@ export default function DestinationCarousel({ destinations }) {
                         pointerEvents: activeIndex === destinations.length - 1 ? "none" : "auto",
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#ff6b2c";
-                        e.currentTarget.style.borderColor = "#ff6b2c";
+                        e.currentTarget.style.background = "#4169E1";
+                        e.currentTarget.style.borderColor = "#4169E1";
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.background = "rgba(10,8,6,0.5)";
@@ -171,13 +188,13 @@ export default function DestinationCarousel({ destinations }) {
                     className="flex items-center"
                     style={{
                         gap: CARD_GAP,
-                        paddingLeft: `calc(50vw - ${CARD_WIDTH / 2}px)`,
-                        paddingRight: `calc(50vw - ${CARD_WIDTH / 2}px)`,
+                        paddingLeft: paddingX,
+                        paddingRight: paddingX,
                         paddingTop: 28,
                         paddingBottom: 28,
                         cursor: isDragging ? "grabbing" : "grab",
                         position: "relative",
-                        zIndex: 10
+                        zIndex: 10,
                     }}
                     animate={{ x: translateX }}
                     transition={
@@ -187,11 +204,15 @@ export default function DestinationCarousel({ destinations }) {
                     }
                 >
                     {destinations.map((dest, i) => (
-                        <DestinationCard
+                        <div
                             key={dest.slug}
-                            destination={dest}
-                            offset={i - activeIndex}
-                        />
+                            ref={i === 0 ? firstCardRef : null}
+                        >
+                            <DestinationCard
+                                destination={dest}
+                                offset={i - activeIndex}
+                            />
+                        </div>
                     ))}
                 </motion.div>
             </div>
@@ -208,7 +229,7 @@ export default function DestinationCarousel({ destinations }) {
                             style={{
                                 width: i === activeIndex ? 28 : 8,
                                 height: 8,
-                                background: i === activeIndex ? "#ff6b2c" : "rgba(255,255,255,0.2)",
+                                background: i === activeIndex ? "#4169E1" : "rgba(255,255,255,0.2)",
                                 border: "none",
                                 padding: 0,
                             }}

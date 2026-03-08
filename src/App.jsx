@@ -187,7 +187,7 @@ function Packages() {
           </button>
         ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 24 }}>
         {filtered.map((p, i) => (
           <div key={p.name + i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 3, overflow: "hidden", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)", transition: `opacity 0.5s ${(i % 6) * 0.07}s, transform 0.5s ${(i % 6) * 0.07}s` }}
             onMouseOver={e => { e.currentTarget.style.border = "1px solid rgba(65,105,225,0.5)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(65,105,225,0.12)"; }}
