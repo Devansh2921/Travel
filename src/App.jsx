@@ -1,25 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import DestinationCarousel from "./components/DestinationCarousel";
+import DestinationPage from "./pages/DestinationPage";
+import AboutPage from "./pages/AboutPage";
+import destinations from "./data/destinations";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
-
-const destinations = [
-  { name: "Almaty", country: "Kazakhstan", img: "https://images.unsplash.com/photo-1586871608370-4adee64d1794?w=600&q=80", tag: "Adventure" },
-  { name: "Bali", country: "Indonesia", img: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80", tag: "Romance" },
-  { name: "Dubai", country: "UAE", img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80", tag: "Luxury" },
-  { name: "Northern Lights", country: "Scandinavia", img: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80", tag: "Magical" },
-  { name: "Hong Kong", country: "China SAR", img: "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=600&q=80", tag: "City" },
-  { name: "Japan", country: "Japan", img: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&q=80", tag: "Culture" },
-  { name: "Malaysia", country: "Malaysia", img: "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=600&q=80", tag: "Nature" },
-  { name: "Singapore", country: "Singapore", img: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&q=80", tag: "Modern" },
-  { name: "Greece", country: "Greece", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&q=80", tag: "History" },
-  { name: "Paris", country: "France", img: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600&q=80", tag: "Romance" },
-  { name: "Switzerland", country: "Switzerland", img: "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=600&q=80", tag: "Scenic" },
-  { name: "Russia", country: "Russia", img: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=600&q=80", tag: "Culture" },
-  { name: "Mauritius", country: "Mauritius", img: "https://images.unsplash.com/photo-1589197331516-4d84b72ebde3?w=600&q=80", tag: "Beach" },
-  { name: "Thailand", country: "Thailand", img: "https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&q=80", tag: "Exotic" },
-  { name: "Turkey", country: "Turkey", img: "https://images.unsplash.com/photo-1569949381669-ecf31ae8e613?w=600&q=80", tag: "Heritage" },
-  { name: "Vietnam", country: "Vietnam", img: "https://images.unsplash.com/photo-1557750255-c76072a7aad1?w=600&q=80", tag: "Discover" },
-];
 
 const packages = [
   { destination: "Almaty", name: "City Charms & Natural Wonders", duration: "4 Nights", price: "₹45,000", img: "https://images.unsplash.com/photo-1586871608370-4adee64d1794?w=400&q=80" },
@@ -84,11 +70,11 @@ function Navbar() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
   const links = [
-    { name: "Home", href: "#" },
-    { name: "Destinations", href: "#destinations" },
-    { name: "Tours", href: "#tours" },
-    { name: "Packages", href: "#packages" },
-    { name: "Blog", href: "#" }
+    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
+    { name: "Destinations", href: "/#destinations" },
+    { name: "Tours", href: "/#tours" },
+    { name: "Packages", href: "/#packages" }
   ];
   return (
     <nav style={{ fontFamily: "'Cormorant Garamond', serif", position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, transition: "all 0.4s", background: scrolled ? "rgba(10,8,6,0.92)" : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,107,44,0.15)" : "none", padding: "0 5vw" }}>
@@ -166,25 +152,6 @@ function Hero() {
           Explore Packages
         </a>
       </div>
-      {/* Search bar */}
-      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "min(900px, 92vw)", zIndex: 10, marginBottom: -28 }}>
-        <div style={{ background: "rgba(15,12,9,0.92)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,107,44,0.25)", borderRadius: 4, padding: "24px 28px", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
-          {[
-            { label: "Destination", placeholder: "Where to?", icon: "📍" },
-            { label: "Travel Month", placeholder: "Pick a month", icon: "📅" },
-            { label: "Travel Type", placeholder: "Honeymoon, Adventure…", icon: "✈️" },
-          ].map(f => (
-            <div key={f.label} style={{ flex: "1 1 160px", display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, letterSpacing: 2, fontFamily: "'Montserrat', sans-serif", textTransform: "uppercase" }}>{f.label}</label>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(255,107,44,0.3)", paddingBottom: 6 }}>
-                <span>{f.icon}</span>
-                <input placeholder={f.placeholder} style={{ background: "none", border: "none", outline: "none", color: "#fff", fontFamily: "'Montserrat', sans-serif", fontSize: 14, width: "100%" }} />
-              </div>
-            </div>
-          ))}
-          <button style={{ flex: "0 0 auto", background: "linear-gradient(135deg, #ff6b2c, #ff9a5c)", color: "#fff", border: "none", borderRadius: 2, padding: "14px 28px", cursor: "pointer", fontFamily: "'Montserrat', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Find Now</button>
-        </div>
-      </div>
     </section>
   );
 }
@@ -201,32 +168,6 @@ function SectionTitle({ tag, title, sub }) {
   );
 }
 
-// ─── DESTINATIONS ────────────────────────────────────────────────────────────
-
-function Destinations() {
-  const [ref, visible] = useScrollAnimation();
-  return (
-    <section ref={ref} id="destinations" style={{ background: "#0a0806", padding: "110px 5vw 80px" }}>
-      <SectionTitle tag="✦ Discover the World" title="Top Destinations" sub="Handpicked destinations offering unparalleled luxury and extraordinary experiences." />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 20 }}>
-        {destinations.map((d, i) => (
-          <div key={d.name} style={{ position: "relative", borderRadius: 3, overflow: "hidden", cursor: "pointer", aspectRatio: "3/4", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: `opacity 0.6s ${i * 0.04}s, transform 0.6s ${i * 0.04}s` }}
-            onMouseOver={e => { e.currentTarget.querySelector(".dest-overlay").style.opacity = 1; e.currentTarget.querySelector("img").style.transform = "scale(1.08)"; }}
-            onMouseOut={e => { e.currentTarget.querySelector(".dest-overlay").style.opacity = 0; e.currentTarget.querySelector("img").style.transform = "scale(1)"; }}>
-            <img src={d.img} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s" }} loading="lazy" />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 60%)" }} />
-            <div className="dest-overlay" style={{ position: "absolute", inset: 0, background: "rgba(255,107,44,0.2)", opacity: 0, transition: "opacity 0.4s" }} />
-            <div style={{ position: "absolute", bottom: 0, left: 0, padding: "20px 18px" }}>
-              <div style={{ fontSize: 10, letterSpacing: 3, color: "#ff9a5c", fontFamily: "'Montserrat', sans-serif", fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>{d.tag}</div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: "#fff", fontWeight: 600 }}>{d.name}</div>
-              <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.6)", letterSpacing: 1 }}>{d.country}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 // ─── PACKAGES ────────────────────────────────────────────────────────────────
 
@@ -455,11 +396,31 @@ function Footer() {
   );
 }
 
-// ─── APP ─────────────────────────────────────────────────────────────────────
+// ─── HOME PAGE ──────────────────────────────────────────────────────────────
+
+function HomePage() {
+  return (
+    <>
+      <Navbar />
+      <Hero />
+      <div style={{ paddingTop: 56 }} />
+      <DestinationCarousel destinations={destinations} />
+      <Stats />
+      <Packages />
+      <Experiences />
+      <PromoBanner />
+      <VideoSection />
+      <Testimonials />
+      <Footer />
+    </>
+  );
+}
+
+// ─── APP ────────────────────────────────────────────────────────────────────
 
 export default function App() {
   return (
-    <>
+    <BrowserRouter>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -471,16 +432,13 @@ export default function App() {
         ::selection{background:rgba(255,107,44,0.35);}
       `}</style>
       <Navbar />
-      <Hero />
-      <div style={{ paddingTop: 56 }} />
-      <Destinations />
-      <Stats />
-      <Packages />
-      <Experiences />
-      <PromoBanner />
-      <VideoSection />
-      <Testimonials />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/destination/:slug" element={<DestinationPage />} />
+        <Route path="/about" element={<AboutPage />} />
+      </Routes>
       <Footer />
-    </>
+    </BrowserRouter>
   );
 }
+
