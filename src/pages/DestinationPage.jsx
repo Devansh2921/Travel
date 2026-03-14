@@ -4,6 +4,16 @@ import { motion } from "framer-motion";
 import destinations from "../data/destinations";
 import PackageCard from "../components/PackageCard";
 
+const COLORS = {
+    primary: "#1E3A8A",
+    primaryLight: "#3B82F6",
+    secondary: "#F97316",
+    dark: "#1a1a2e",
+    muted: "#64748b",
+    bg: "#ffffff",
+    bgAlt: "#f1f5f9",
+};
+
 export default function DestinationPage() {
     const { slug } = useParams();
     const navigate = useNavigate();
@@ -21,18 +31,18 @@ export default function DestinationPage() {
         return (
             <div
                 className="min-h-screen flex flex-col items-center justify-center gap-6"
-                style={{ background: "#0a0806" }}
+                style={{ background: COLORS.bg }}
             >
                 <div
-                    className="text-5xl text-white"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-5xl"
+                    style={{ fontFamily: "'Cormorant Garamond', serif", color: COLORS.dark }}
                 >
                     Destination not found
                 </div>
                 <button
                     onClick={() => navigate("/")}
                     className="px-8 py-3 rounded-full font-bold tracking-widest text-sm uppercase"
-                    style={{ background: "linear-gradient(135deg,#ff6b2c,#ff9a5c)", color: "#fff", fontFamily: "'Montserrat', sans-serif" }}
+                    style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`, color: "#fff", fontFamily: "'Montserrat', sans-serif" }}
                 >
                     ← Back Home
                 </button>
@@ -45,7 +55,7 @@ export default function DestinationPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: loaded ? 1 : 0, y: loaded ? 0 : 16 }}
             transition={{ duration: 0.55, ease: "easeOut" }}
-            style={{ background: "#0a0806", minHeight: "100vh" }}
+            style={{ background: COLORS.bg, minHeight: "100vh" }}
         >
             {/* ── HERO ── */}
             <div className="relative overflow-hidden" style={{ height: "100vh", minHeight: 560 }}>
@@ -57,27 +67,27 @@ export default function DestinationPage() {
                 {/* Gradient */}
                 <div
                     className="absolute inset-0"
-                    style={{ background: "linear-gradient(to bottom, rgba(10,8,6,0.28) 0%, rgba(10,8,6,0.52) 55%, rgba(10,8,6,1) 100%)" }}
+                    style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.7) 100%)" }}
                 />
 
                 {/* Back button */}
                 <button
                     onClick={() => navigate("/")}
-                    className="absolute top-7 z-10 flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-[12px] font-semibold tracking-widest uppercase transition-all"
+                    className="absolute top-24 z-10 flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-[12px] font-semibold tracking-widest uppercase transition-all"
                     style={{
                         left: "5vw",
-                        background: "rgba(10,8,6,0.55)",
+                        background: "rgba(255,255,255,0.15)",
                         backdropFilter: "blur(12px)",
-                        border: "1px solid rgba(255,255,255,0.15)",
+                        border: "1px solid rgba(255,255,255,0.25)",
                         fontFamily: "'Montserrat', sans-serif",
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#ff6b2c";
-                        e.currentTarget.style.borderColor = "#ff6b2c";
+                        e.currentTarget.style.background = COLORS.primary;
+                        e.currentTarget.style.borderColor = COLORS.primary;
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "rgba(10,8,6,0.55)";
-                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
+                        e.currentTarget.style.background = "rgba(255,255,255,0.15)";
+                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)";
                     }}
                 >
                     ← Back
@@ -87,7 +97,7 @@ export default function DestinationPage() {
                 <div className="absolute bottom-[8%] px-[5vw]">
                     <div
                         className="text-[11px] tracking-[5px] uppercase font-bold mb-3"
-                        style={{ fontFamily: "'Montserrat', sans-serif", color: "#ff6b2c" }}
+                        style={{ fontFamily: "'Montserrat', sans-serif", color: COLORS.secondary }}
                     >
                         ✦ {destination.tag} · {destination.country}
                     </div>
@@ -100,9 +110,9 @@ export default function DestinationPage() {
                     <div
                         className="inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold mr-4"
                         style={{
-                            background: "rgba(255,107,44,0.18)",
-                            border: "1px solid rgba(255,107,44,0.4)",
-                            color: "#ff9a5c",
+                            background: "rgba(249,115,22,0.2)",
+                            border: `1px solid rgba(249,115,22,0.5)`,
+                            color: COLORS.secondary,
                             fontFamily: "'Montserrat', sans-serif",
                         }}
                     >
@@ -110,7 +120,7 @@ export default function DestinationPage() {
                     </div>
                     <span
                         className="text-xs tracking-wide"
-                        style={{ fontFamily: "'Montserrat', sans-serif", color: "rgba(255,255,255,0.4)" }}
+                        style={{ fontFamily: "'Montserrat', sans-serif", color: "rgba(255,255,255,0.5)" }}
                     >
                         Scroll to explore ↓
                     </span>
@@ -121,13 +131,13 @@ export default function DestinationPage() {
             <div className="mx-auto px-[5vw] py-20" style={{ maxWidth: 860 }}>
                 <div
                     className="text-[11px] tracking-[5px] uppercase font-bold mb-5"
-                    style={{ fontFamily: "'Montserrat', sans-serif", color: "#ff6b2c" }}
+                    style={{ fontFamily: "'Montserrat', sans-serif", color: COLORS.primary }}
                 >
                     ✦ About {destination.name}
                 </div>
                 <p
-                    className="leading-relaxed text-white/85 italic"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(20px,2.8vw,28px)" }}
+                    className="leading-relaxed italic"
+                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(20px,2.8vw,28px)", color: COLORS.dark }}
                 >
                     {destination.description}
                 </p>
@@ -136,21 +146,21 @@ export default function DestinationPage() {
             {/* Divider */}
             <div
                 className="mx-[5vw]"
-                style={{ height: 1, background: "linear-gradient(to right, transparent, rgba(255,107,44,0.3), transparent)" }}
+                style={{ height: 1, background: `linear-gradient(to right, transparent, rgba(30,58,138,0.2), transparent)` }}
             />
 
             {/* ── PACKAGES ── */}
-            <div className="px-[5vw] py-20">
+            <div className="px-[5vw] py-20" style={{ background: COLORS.bgAlt }}>
                 <div className="text-center mb-14">
                     <div
                         className="text-[11px] tracking-[5px] uppercase font-bold mb-4"
-                        style={{ fontFamily: "'Montserrat', sans-serif", color: "#ff6b2c" }}
+                        style={{ fontFamily: "'Montserrat', sans-serif", color: COLORS.primary }}
                     >
                         ✦ Curated Itineraries
                     </div>
                     <h2
-                        className="text-white font-bold"
-                        style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(32px,5vw,56px)" }}
+                        className="font-bold"
+                        style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(32px,5vw,56px)", color: COLORS.dark }}
                     >
                         {destination.name} Packages
                     </h2>
@@ -164,23 +174,23 @@ export default function DestinationPage() {
             </div>
 
             {/* ── FOOTER CTA ── */}
-            <div className="text-center pb-20 px-[5vw]">
+            <div className="text-center py-20 px-[5vw]" style={{ background: COLORS.bg }}>
                 <button
                     onClick={() => navigate("/")}
                     className="px-9 py-3 rounded-full text-xs font-bold tracking-[3px] uppercase transition-all"
                     style={{
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        color: "rgba(255,255,255,0.6)",
+                        border: `1px solid ${COLORS.primary}`,
+                        color: COLORS.primary,
                         background: "none",
                         fontFamily: "'Montserrat', sans-serif",
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = "#ff6b2c";
-                        e.currentTarget.style.color = "#ff6b2c";
+                        e.currentTarget.style.background = COLORS.primary;
+                        e.currentTarget.style.color = "#fff";
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
-                        e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+                        e.currentTarget.style.background = "none";
+                        e.currentTarget.style.color = COLORS.primary;
                     }}
                 >
                     ← Explore More Destinations

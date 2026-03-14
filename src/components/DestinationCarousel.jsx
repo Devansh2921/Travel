@@ -2,6 +2,17 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import DestinationCard from "./DestinationCard";
 
+const COLORS = {
+    primary: "#1E3A8A",
+    primaryLight: "#3B82F6",
+    secondary: "#F97316",
+    muted: "#64748b",
+    bg: "#ffffff",
+    bgAlt: "#f1f5f9",
+    bgAlt2: "#e2e8f0",
+    dark: "#1a1a2e",
+};
+
 export default function DestinationCarousel({ destinations }) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
@@ -12,7 +23,6 @@ export default function DestinationCarousel({ destinations }) {
 
     const CARD_GAP = 24;
 
-    // Measure the actual rendered card width so the step matches CSS exactly
     const [cardWidth, setCardWidth] = useState(300);
     useEffect(() => {
         const measure = () => {
@@ -33,7 +43,6 @@ export default function DestinationCarousel({ destinations }) {
         [destinations.length]
     );
 
-    // Keyboard navigation
     useEffect(() => {
         const handler = (e) => {
             if (e.key === "ArrowLeft") prev();
@@ -43,7 +52,6 @@ export default function DestinationCarousel({ destinations }) {
         return () => window.removeEventListener("keydown", handler);
     }, [prev, next]);
 
-    // ── Drag / touch ──────────────────────────────────────────────────────────
     const onMouseDown = (e) => {
         setIsDragging(true);
         setDragStartX(e.clientX);
@@ -79,40 +87,38 @@ export default function DestinationCarousel({ destinations }) {
     }, [isDragging, dragDeltaX, STEP, next, prev]);
 
     const translateX = isDragging ? -activeIndex * STEP + dragDeltaX : -activeIndex * STEP;
-
-    // Padding so the active card is centred in the viewport
     const paddingX = `calc(50vw - ${cardWidth / 2}px)`;
 
     return (
         <section
             id="destinations"
             className="relative py-24 overflow-hidden select-none"
-            style={{ background: "#0a0806" }}
+            style={{ background: COLORS.bgAlt }}
         >
-            {/* ── Header ── */}
+            {/* Header */}
             <div className="text-center mb-14 px-[5vw]">
                 <div
-                    className="text-[11px] tracking-[5px] uppercase mb-4 font-semibold"
-                    style={{ fontFamily: "'Montserrat', sans-serif", color: "#4169E1" }}
+                    className="text-[11px] tracking-[5px] uppercase mb-4 font-bold"
+                    style={{ fontFamily: "'Montserrat', sans-serif", color: COLORS.primary }}
                 >
                     ✦ Discover the World
                 </div>
                 <h2
-                    className="text-white font-bold leading-none mb-4"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(36px,5.5vw,64px)" }}
+                    className="font-bold leading-none mb-4"
+                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(36px,5.5vw,64px)", color: COLORS.dark }}
                 >
                     Top Destinations
                 </h2>
                 <p
                     className="mx-auto text-sm leading-relaxed"
-                    style={{ fontFamily: "'Montserrat', sans-serif", color: "rgba(255,255,255,0.45)", maxWidth: 400 }}
+                    style={{ fontFamily: "'Montserrat', sans-serif", color: COLORS.muted, maxWidth: 400 }}
                 >
                     Handpicked corners of the Earth, curated for the discerning traveller.
                     Drag, swipe, or use arrows to explore.
                 </p>
             </div>
 
-            {/* ── Carousel viewport ── */}
+            {/* Carousel viewport */}
             <div
                 ref={containerRef}
                 className="relative w-full overflow-hidden"
@@ -127,11 +133,11 @@ export default function DestinationCarousel({ destinations }) {
                 {/* Fade edges */}
                 <div
                     className="absolute top-0 left-0 h-full pointer-events-none z-20"
-                    style={{ width: "10vw", background: "linear-gradient(to right, #0a0806, transparent)" }}
+                    style={{ width: "10vw", background: `linear-gradient(to right, ${COLORS.bgAlt}, transparent)` }}
                 />
                 <div
                     className="absolute top-0 right-0 h-full pointer-events-none z-20"
-                    style={{ width: "10vw", background: "linear-gradient(to left, #0a0806, transparent)" }}
+                    style={{ width: "10vw", background: `linear-gradient(to left, ${COLORS.bgAlt}, transparent)` }}
                 />
 
                 {/* Left arrow */}
@@ -140,20 +146,21 @@ export default function DestinationCarousel({ destinations }) {
                     disabled={activeIndex === 0}
                     className="absolute left-[4vw] top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all duration-300"
                     style={{
-                        border: "1px solid rgba(255,255,255,0.35)",
-                        background: "rgba(10,8,6,0.5)",
+                        border: `1px solid ${COLORS.bgAlt2}`,
+                        background: "rgba(255,255,255,0.85)",
                         backdropFilter: "blur(12px)",
-                        color: activeIndex === 0 ? "rgba(255,255,255,0.2)" : "#fff",
+                        color: activeIndex === 0 ? COLORS.bgAlt2 : COLORS.primary,
                         opacity: activeIndex === 0 ? 0 : 1,
                         pointerEvents: activeIndex === 0 ? "none" : "auto",
+                        boxShadow: "4px 4px 12px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)",
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#4169E1";
-                        e.currentTarget.style.borderColor = "#4169E1";
+                        e.currentTarget.style.background = COLORS.primary;
+                        e.currentTarget.style.color = "#fff";
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "rgba(10,8,6,0.5)";
-                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)";
+                        e.currentTarget.style.background = "rgba(255,255,255,0.85)";
+                        e.currentTarget.style.color = COLORS.primary;
                     }}
                 >
                     ←
@@ -165,20 +172,21 @@ export default function DestinationCarousel({ destinations }) {
                     disabled={activeIndex === destinations.length - 1}
                     className="absolute right-[4vw] top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all duration-300"
                     style={{
-                        border: "1px solid rgba(255,255,255,0.35)",
-                        background: "rgba(10,8,6,0.5)",
+                        border: `1px solid ${COLORS.bgAlt2}`,
+                        background: "rgba(255,255,255,0.85)",
                         backdropFilter: "blur(12px)",
-                        color: activeIndex === destinations.length - 1 ? "rgba(255,255,255,0.2)" : "#fff",
+                        color: activeIndex === destinations.length - 1 ? COLORS.bgAlt2 : COLORS.primary,
                         opacity: activeIndex === destinations.length - 1 ? 0 : 1,
                         pointerEvents: activeIndex === destinations.length - 1 ? "none" : "auto",
+                        boxShadow: "4px 4px 12px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)",
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#4169E1";
-                        e.currentTarget.style.borderColor = "#4169E1";
+                        e.currentTarget.style.background = COLORS.primary;
+                        e.currentTarget.style.color = "#fff";
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "rgba(10,8,6,0.5)";
-                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)";
+                        e.currentTarget.style.background = "rgba(255,255,255,0.85)";
+                        e.currentTarget.style.color = COLORS.primary;
                     }}
                 >
                     →
@@ -217,9 +225,8 @@ export default function DestinationCarousel({ destinations }) {
                 </motion.div>
             </div>
 
-            {/* ── Controls row ── */}
+            {/* Controls row */}
             <div className="flex items-center justify-center gap-5 mt-10">
-                {/* Dot indicators */}
                 <div className="flex gap-1.5 items-center">
                     {destinations.map((_, i) => (
                         <button
@@ -229,7 +236,7 @@ export default function DestinationCarousel({ destinations }) {
                             style={{
                                 width: i === activeIndex ? 28 : 8,
                                 height: 8,
-                                background: i === activeIndex ? "#4169E1" : "rgba(255,255,255,0.2)",
+                                background: i === activeIndex ? COLORS.primary : COLORS.bgAlt2,
                                 border: "none",
                                 padding: 0,
                             }}
@@ -241,7 +248,7 @@ export default function DestinationCarousel({ destinations }) {
             {/* Counter */}
             <div
                 className="text-center mt-4 tracking-[3px] text-[11px]"
-                style={{ fontFamily: "'Montserrat', sans-serif", color: "rgba(255,255,255,0.28)" }}
+                style={{ fontFamily: "'Montserrat', sans-serif", color: COLORS.muted }}
             >
                 {String(activeIndex + 1).padStart(2, "0")} / {String(destinations.length).padStart(2, "0")}
             </div>
