@@ -93,8 +93,8 @@ function Navbar() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70 }}>
         {/* Logo */}
         <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <img src={logo} alt="We Plan Trips" style={{ height: 52, width: "auto", objectFit: "contain" }} />
-          <span style={{ color: scrolled ? COLORS.primary : "#fff", fontSize: 18, fontWeight: 700, letterSpacing: 2, fontFamily: "'Montserrat', sans-serif", transition: "color 0.3s" }}>WE PLAN TRIPS</span>
+          <img src={logo} alt="We Plan Trips" className="nav-logo" style={{ height: 52, width: "auto", objectFit: "contain" }} />
+          <span className="nav-brand" style={{ color: scrolled ? COLORS.primary : "#fff", fontSize: 18, fontWeight: 700, letterSpacing: 2, fontFamily: "'Montserrat', sans-serif", transition: "color 0.3s" }}>WE PLAN TRIPS</span>
         </Link>
         {/* Desktop Links */}
         <div style={{ display: "flex", gap: 36, alignItems: "center" }} className="desktop-nav">
@@ -208,7 +208,7 @@ function HeroDestinations() {
           {d.tagline}
         </p>
 
-        <button onClick={() => navigate(`/destination/${d.slug}`)} style={{
+        <button className="hero-cta-btn" onClick={() => navigate(`/destination/${d.slug}`)} style={{
           display: "inline-block",
           background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
           color: "#fff", padding: "14px 40px", borderRadius: 50,
@@ -226,7 +226,7 @@ function HeroDestinations() {
       </div>
 
       {/* Side navigation: vertical dots */}
-      <div style={{
+      <div className="hero-side-dots" style={{
         position: "absolute", right: 40, top: "50%", transform: "translateY(-50%)",
         display: "flex", flexDirection: "column", gap: 14, zIndex: 10,
       }}>
@@ -247,12 +247,12 @@ function HeroDestinations() {
       </div>
 
       {/* Bottom destination name ticker */}
-      <div style={{
+      <div className="hero-ticker" style={{
         position: "absolute", bottom: 100, left: 0, right: 0, zIndex: 5,
         display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", padding: "0 20px",
       }}>
         {heroDestinations.map((dest, i) => (
-          <button key={dest.slug} onClick={() => goToSlide(i)} style={{
+          <button key={dest.slug} onClick={() => goToSlide(i)} className="hero-ticker-btn" style={{
             padding: "8px 20px", borderRadius: 50,
             background: i === slide ? "rgba(255,255,255,0.2)" : "transparent",
             backdropFilter: i === slide ? "blur(10px)" : "none",
@@ -270,19 +270,13 @@ function HeroDestinations() {
       </div>
 
       {/* Slide counter */}
-      <div style={{
+      <div className="hero-counter" style={{
         position: "absolute", bottom: 50, left: "50%", transform: "translateX(-50%)",
         fontFamily: "'Montserrat', sans-serif", fontSize: 12, letterSpacing: 3,
         color: "rgba(255,255,255,0.5)", zIndex: 5,
       }}>
         {String(slide + 1).padStart(2, "0")} / {String(heroDestinations.length).padStart(2, "0")}
       </div>
-
-      <style>{`
-        @media(max-width:768px) {
-          .hero-side-dots { display: none !important; }
-        }
-      `}</style>
     </section>
   );
 }
@@ -299,11 +293,11 @@ function SearchBar() {
     : [];
 
   return (
-    <div style={{
+    <div className="search-wrapper" style={{
       position: "relative", zIndex: 20, marginTop: -36,
       display: "flex", justifyContent: "center", padding: "0 20px",
     }}>
-      <div style={{
+      <div className="search-bar" style={{
         ...CLAY.card,
         borderRadius: 60, padding: "8px 8px 8px 32px",
         display: "flex", alignItems: "center", gap: 12,
@@ -322,10 +316,10 @@ function SearchBar() {
           style={{
             flex: 1, border: "none", outline: "none", background: "transparent",
             fontFamily: "'Montserrat', sans-serif", fontSize: 15, color: COLORS.dark,
-            padding: "12px 0",
+            padding: "12px 0", minWidth: 0,
           }}
         />
-        <button style={{
+        <button className="search-btn" style={{
           background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
           color: "#fff", border: "none", borderRadius: 50,
           padding: "12px 32px", fontFamily: "'Montserrat', sans-serif",
@@ -333,6 +327,7 @@ function SearchBar() {
           textTransform: "uppercase", cursor: "pointer",
           boxShadow: "0 4px 16px rgba(30,58,138,0.3)",
           transition: "transform 0.2s, box-shadow 0.2s",
+          whiteSpace: "nowrap",
         }}
           onMouseOver={e => { e.target.style.transform = "translateY(-1px)"; e.target.style.boxShadow = "0 6px 20px rgba(30,58,138,0.45)"; }}
           onMouseOut={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 4px 16px rgba(30,58,138,0.3)"; }}
@@ -522,7 +517,7 @@ function DestinationGallery() {
         >→</button>
 
         {/* 3-frame mosaic: 1 large left + 2 stacked right */}
-        <div style={{
+        <div className="gallery-mosaic" style={{
           display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20,
           opacity: fade ? 1 : 0, transform: fade ? "scale(1)" : "scale(0.97)",
           transition: "opacity 0.4s ease, transform 0.4s ease",
@@ -559,16 +554,7 @@ function DestinationGallery() {
         )}
       </div>
 
-      {/* Mobile responsive */}
-      <style>{`
-        @media(max-width: 768px) {
-          #packages > div:nth-child(2) > div:nth-child(3) { grid-template-columns: 1fr !important; }
-          #packages > div:nth-child(2) > div:nth-child(3) > div:first-child { height: 280px !important; }
-          #packages > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div { height: 220px !important; }
-          #packages > div:nth-child(2) > button:first-child { left: 8px !important; }
-          #packages > div:nth-child(2) > button:nth-child(2) { right: 8px !important; }
-        }
-      `}</style>
+
     </section>
   );
 }
@@ -586,7 +572,7 @@ function Experiences() {
   return (
     <section ref={ref} id="tours" style={{ background: COLORS.bgAlt, padding: "90px 5vw" }}>
       <SectionTitle tag="✦ Why Choose Us" title="The WE PLAN TRIPS Experience" />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 28 }}>
+      <div className="experiences-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 28 }}>
         {items.map((item, i) => (
           <div key={item.title} style={{
             ...CLAY.card,
@@ -709,12 +695,12 @@ function Stats() {
     { val: "400+", label: "Packages" },
     { val: "4.9★", label: "Average Rating" },
   ];
-  return (
-    <section ref={ref} style={{
+   return (
+    <section ref={ref} className="stats-section" style={{
       background: `linear-gradient(135deg, ${COLORS.primary}, #2563eb)`,
       padding: "70px 5vw",
     }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 20, maxWidth: 900, margin: "0 auto" }}>
+      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 20, maxWidth: 900, margin: "0 auto" }}>
         {items.map((s, i) => (
           <div key={s.label} style={{ textAlign: "center", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)", transition: `all 0.5s ${i * 0.1}s` }}>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(38px, 5vw, 56px)", color: "#fff", fontWeight: 700 }}>{s.val}</div>
@@ -733,7 +719,7 @@ function ContactSection() {
     <section id="contact" style={{ background: COLORS.bg, padding: "90px 5vw" }}>
       <SectionTitle tag="✦ Get In Touch" title="Contact Us" sub="Have a question or ready to plan your next adventure? Reach out to us." />
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
-        <div style={{
+        <div className="contact-card" style={{
           ...CLAY.card,
           padding: "40px 36px",
         }}>
@@ -797,7 +783,7 @@ function ContactSection() {
 function Footer() {
   return (
     <footer style={{ background: "#0f172a", borderTop: "none", padding: "70px 5vw 30px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 40, marginBottom: 50 }}>
+      <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 40, marginBottom: 50 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
             <img src={logo} alt="We Plan Trips" style={{ height: 44, width: "auto", objectFit: "contain" }} />
@@ -896,7 +882,7 @@ function LeadOverlay() {
       backdropFilter: "blur(6px)",
       animation: "fadeIn 0.4s ease",
     }} onClick={handleClose}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div onClick={e => e.stopPropagation()} className="lead-overlay-card" style={{
         background: COLORS.bg,
         borderRadius: 28,
         padding: "40px 36px",
@@ -1013,6 +999,67 @@ export default function App() {
         ::-webkit-scrollbar-track{background:#f1f5f9;}
         ::-webkit-scrollbar-thumb{background:#1E3A8A;border-radius:3px;}
         ::selection{background:rgba(30,58,138,0.2);}
+
+        /* ─── MOBILE RESPONSIVE ──────────────────────── */
+        @media(max-width: 768px) {
+          /* Navbar */
+          .nav-logo { height: 40px !important; }
+          .nav-brand { font-size: 14px !important; letter-spacing: 1px !important; }
+
+          /* Hero */
+          .hero-side-dots { display: none !important; }
+          .hero-ticker { bottom: 80px !important; gap: 6px !important; }
+          .hero-ticker-btn { padding: 6px 12px !important; font-size: 9px !important; letter-spacing: 1px !important; }
+          .hero-counter { bottom: 40px !important; font-size: 10px !important; }
+          .hero-cta-btn { padding: 12px 28px !important; font-size: 11px !important; letter-spacing: 2px !important; }
+
+          /* Search bar */
+          .search-wrapper { padding: 0 12px !important; margin-top: -28px !important; }
+          .search-bar { border-radius: 50px !important; padding: 6px 6px 6px 18px !important; gap: 8px !important; }
+          .search-bar input { font-size: 13px !important; padding: 10px 0 !important; }
+          .search-btn { padding: 10px 18px !important; font-size: 11px !important; letter-spacing: 1px !important; }
+
+          /* Gallery mosaic */
+          .gallery-mosaic { grid-template-columns: 1fr !important; gap: 14px !important; }
+          .gallery-mosaic > div:first-child { height: 260px !important; }
+          .gallery-mosaic > div:nth-child(2) { gap: 14px !important; }
+          .gallery-mosaic > div:nth-child(2) > div { height: 200px !important; }
+          #packages > div:nth-child(2) > button:first-child { left: 4px !important; width: 38px !important; height: 38px !important; font-size: 16px !important; }
+          #packages > div:nth-child(2) > button:nth-child(2) { right: 4px !important; width: 38px !important; height: 38px !important; font-size: 16px !important; }
+
+          /* Experiences */
+          .experiences-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+
+          /* Stats */
+          .stats-section { padding: 50px 5vw !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 24px !important; }
+
+          /* Contact */
+          .contact-card { padding: 28px 20px !important; }
+
+          /* Footer */
+          .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+
+          /* Promo banner & video section */
+          section[style*="height: 380"] { height: 300px !important; }
+          section[style*="height: 520"] { height: 380px !important; }
+
+          /* Lead overlay */
+          .lead-overlay-card { padding: 28px 20px !important; border-radius: 22px !important; }
+
+          /* Section titles */
+          section { padding-left: 4vw !important; padding-right: 4vw !important; }
+        }
+
+        @media(max-width: 480px) {
+          /* Extra small devices */
+          .hero-ticker { display: none !important; }
+          .hero-counter { bottom: 30px !important; }
+          .search-btn { padding: 10px 14px !important; font-size: 10px !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .gallery-mosaic > div:first-child { height: 200px !important; }
+          .gallery-mosaic > div:nth-child(2) > div { height: 160px !important; }
+        }
       `}</style>
       <Navbar />
       <LeadOverlay />

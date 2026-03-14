@@ -196,6 +196,16 @@ export default function DestinationPage() {
                     ← Explore More Destinations
                 </button>
             </div>
+
+            <style>{`
+                @media(max-width: 768px) {
+                    .relative.overflow-hidden[style*="height: 100vh"] { height: 70vh !important; min-height: 420px !important; }
+                    .absolute.top-24 { top: 80px !important; }
+                    .absolute.bottom-\\[8\\%\\] { bottom: 5% !important; }
+                    .px-\\[5vw\\] { padding-left: 4vw !important; padding-right: 4vw !important; }
+                    .grid.gap-5 { grid-template-columns: 1fr !important; }
+                }
+            `}</style>
         </motion.div>
     );
 }

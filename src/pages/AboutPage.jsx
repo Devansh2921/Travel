@@ -277,6 +277,36 @@ export default function AboutPage() {
                 </div>
             </section>
 
+            {/* Mobile responsive */}
+            <style>{`
+                @media(max-width: 768px) {
+                    /* Hero */
+                    section:first-child { min-height: 400px !important; height: 55vh !important; }
+                    section:first-child h1 { font-size: 36px !important; }
+
+                    /* Story section grid */
+                    section:nth-of-type(3) > div > div { grid-template-columns: 1fr !important; gap: 30px !important; }
+                    section:nth-of-type(3) > div > div > div:last-child > div:first-child { border-radius: 20px !important; aspect-ratio: 16/10 !important; }
+                    section:nth-of-type(3) > div > div > div:last-child > div:last-child { display: none !important; }
+                    section:nth-of-type(3) > div > div > div:last-child > div:nth-child(2) { bottom: -16px !important; right: -8px !important; }
+
+                    /* Values grid */
+                    section:nth-of-type(4) > div:last-child { grid-template-columns: 1fr !important; }
+
+                    /* Team grid */
+                    section:nth-of-type(5) > div:last-child { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
+
+                    /* Dest grid */
+                    section:nth-of-type(6) > div:last-child { grid-template-columns: 1fr !important; }
+
+                    /* general */
+                    section { padding: 60px 4vw !important; }
+                }
+                @media(max-width: 480px) {
+                    section:nth-of-type(5) > div:last-child { grid-template-columns: 1fr !important; }
+                }
+            `}</style>
+
         </div>
     );
 }

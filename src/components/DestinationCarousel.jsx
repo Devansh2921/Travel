@@ -252,6 +252,15 @@ export default function DestinationCarousel({ destinations }) {
             >
                 {String(activeIndex + 1).padStart(2, "0")} / {String(destinations.length).padStart(2, "0")}
             </div>
+
+            <style>{`
+                @media(max-width: 768px) {
+                    #destinations { padding: 60px 3vw !important; }
+                    #destinations .text-center.mb-14 { margin-bottom: 28px !important; }
+                    #destinations button[class*="absolute"][class*="left-"] { width: 36px !important; height: 36px !important; font-size: 16px !important; left: 2vw !important; }
+                    #destinations button[class*="absolute"][class*="right-"] { width: 36px !important; height: 36px !important; font-size: 16px !important; right: 2vw !important; }
+                }
+            `}</style>
         </section>
     );
 }
