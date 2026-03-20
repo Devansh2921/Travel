@@ -168,7 +168,7 @@ export default function DestinationPage() {
 
                 <div className="grid gap-5 mx-auto" style={{ maxWidth: 1200, gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 320px), 1fr))" }}>
                     {destination.packages.map((pkg, i) => (
-                        <PackageCard key={pkg.title} pkg={pkg} index={i} />
+                        <PackageCard key={pkg.title} pkg={pkg} index={i} destinationSlug={destination.slug} />
                     ))}
                 </div>
             </div>
@@ -199,11 +199,16 @@ export default function DestinationPage() {
 
             <style>{`
                 @media(max-width: 768px) {
-                    .relative.overflow-hidden[style*="height: 100vh"] { height: 70vh !important; min-height: 420px !important; }
+                    .relative.overflow-hidden[style*="height: 100vh"] { height: 70vh !important; min-height: 400px !important; }
                     .absolute.top-24 { top: 80px !important; }
                     .absolute.bottom-\\[8\\%\\] { bottom: 5% !important; }
                     .px-\\[5vw\\] { padding-left: 4vw !important; padding-right: 4vw !important; }
                     .grid.gap-5 { grid-template-columns: 1fr !important; }
+                }
+                @media(max-width: 480px) {
+                    .relative.overflow-hidden[style*="height: 100vh"] { height: 60vh !important; min-height: 360px !important; }
+                    .absolute.bottom-\\[8\\%\\] h1 { font-size: clamp(36px, 10vw, 48px) !important; }
+                    .absolute.top-24 { top: 72px !important; font-size: 10px !important; padding: 8px 16px !important; }
                 }
             `}</style>
         </motion.div>

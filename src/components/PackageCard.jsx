@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const COLORS = {
     primary: "#1E3A8A",
@@ -10,7 +11,15 @@ const COLORS = {
     bg: "#ffffff",
 };
 
-export default function PackageCard({ pkg, index }) {
+export default function PackageCard({ pkg, index, destinationSlug }) {
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+        if (pkg.hasDetailPage && pkg.slug) {
+            navigate(`/destination/${pkg.destinationSlug || destinationSlug}/package/${pkg.slug}`);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -22,12 +31,14 @@ export default function PackageCard({ pkg, index }) {
                 borderRadius: 20,
                 boxShadow: "8px 8px 20px rgba(0,0,0,0.06), -4px -4px 12px rgba(255,255,255,0.8), inset 1px 1px 2px rgba(255,255,255,0.6)",
                 border: "1px solid rgba(0,0,0,0.04)",
+                cursor: pkg.hasDetailPage ? "pointer" : "default",
             }}
             whileHover={{
                 boxShadow: "10px 10px 28px rgba(30,58,138,0.12), -4px -4px 12px rgba(255,255,255,0.9), inset 1px 1px 2px rgba(255,255,255,0.6)",
                 border: "1px solid rgba(30,58,138,0.15)",
                 y: -4,
             }}
+            onClick={handleClick}
         >
             <div className="p-6 flex flex-col gap-4">
                 {/* Duration badge */}
@@ -41,30 +52,31 @@ export default function PackageCard({ pkg, index }) {
                 {/* Title */}
                 <h3
                     className="text-lg font-semibold leading-snug"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(16px,1.6vw,20px)", color: COLORS.dark }}
+                    style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(16px,1.6vw,20px)", color: COLORS.dark }}
                 >
                     {pkg.title}
                 </h3>
 
+                {/* Destinations covered */}
+                {pkg.destinationsCovered && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {pkg.destinationsCovered.map(d => (
+                            <span key={d} style={{
+                                padding: "4px 12px", borderRadius: 50,
+                                background: COLORS.primary + "10",
+                                fontFamily: "'Montserrat', sans-serif",
+                                fontSize: 10, fontWeight: 600, color: COLORS.primary,
+                                letterSpacing: 1,
+                            }}>{d}</span>
+                        ))}
+                    </div>
+                )}
+
                 {/* Divider */}
                 <div style={{ height: 1, background: `linear-gradient(to right, rgba(30,58,138,0.15), transparent)` }} />
 
-                {/* Price + CTA */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <div
-                            className="text-[10px] tracking-widest uppercase mb-1"
-                            style={{ fontFamily: "'Montserrat', sans-serif", color: COLORS.muted }}
-                        >
-                            Starting from
-                        </div>
-                        <div
-                            className="text-xl font-bold"
-                            style={{ fontFamily: "'Cormorant Garamond', serif", color: COLORS.secondary }}
-                        >
-                            {pkg.price.replace("Starting from ", "")}
-                        </div>
-                    </div>
+                {/* CTA */}
+                <div className="flex items-center justify-end">
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.97 }}
@@ -74,9 +86,14 @@ export default function PackageCard({ pkg, index }) {
                             color: "#fff",
                             fontFamily: "'Montserrat', sans-serif",
                             boxShadow: "0 4px 18px rgba(30,58,138,0.3)",
+                            border: "none", cursor: "pointer",
+                        }}
+                        onClick={e => {
+                            e.stopPropagation();
+                            handleClick();
                         }}
                     >
-                        Book Now
+                        {pkg.hasDetailPage ? "View Details" : "Enquire"}
                     </motion.button>
                 </div>
             </div>

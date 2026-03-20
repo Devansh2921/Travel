@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import emailjs from "@emailjs/browser";
 import logo from "./assets/logo.png";
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import DestinationCarousel from "./components/DestinationCarousel";
 import DestinationPage from "./pages/DestinationPage";
+import PackagePage from "./pages/PackagePage";
 import AboutPage from "./pages/AboutPage";
 import destinations from "./data/destinations";
 
@@ -66,6 +68,104 @@ const useScrollAnimation = () => {
 
 // ─── NAVBAR ──────────────────────────────────────────────────────────────────
 
+function NavbarSearch({ scrolled }) {
+  const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [placeholderFade, setPlaceholderFade] = useState(true);
+  const navigate = useNavigate();
+
+  const searchSuggestions = destinations.map(d => `Search ${d.name}...`);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setPlaceholderFade(false);
+      setTimeout(() => {
+        setPlaceholderIndex(i => (i + 1) % searchSuggestions.length);
+        setPlaceholderFade(true);
+      }, 300);
+    }, 2500);
+    return () => clearInterval(t);
+  }, [searchSuggestions.length]);
+
+  const results = query.length > 0
+    ? destinations.filter(d => d.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5)
+    : [];
+
+  return (
+    <div className="navbar-search" style={{ position: "relative", flex: "0 1 420px", margin: "0 24px" }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        background: scrolled ? COLORS.bgAlt : "rgba(255,255,255,0.15)",
+        borderRadius: 50, padding: "6px 6px 6px 18px",
+        border: scrolled ? `1px solid ${COLORS.bgAlt2}` : "1px solid rgba(255,255,255,0.2)",
+        backdropFilter: scrolled ? "none" : "blur(12px)",
+        transition: "all 0.4s",
+      }}>
+        <span style={{ fontSize: 16, color: scrolled ? COLORS.muted : "rgba(255,255,255,0.7)", transition: "color 0.3s" }}>🔍</span>
+        <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setTimeout(() => setFocused(false), 200)}
+            style={{
+              width: "100%", border: "none", outline: "none", background: "transparent",
+              fontFamily: "'Montserrat', sans-serif", fontSize: 13,
+              color: scrolled ? COLORS.dark : "#fff",
+              padding: "8px 0", transition: "color 0.3s",
+            }}
+          />
+          {query.length === 0 && (
+            <span className="nav-search-placeholder" style={{
+              position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
+              fontFamily: "'Montserrat', sans-serif", fontSize: 13,
+              color: scrolled ? COLORS.muted : "rgba(255,255,255,0.55)",
+              pointerEvents: "none", transition: "color 0.3s, opacity 0.3s, transform 0.3s",
+              opacity: placeholderFade ? 1 : 0,
+              transform: placeholderFade ? "translateY(-50%)" : "translateY(-70%)",
+            }}>
+              {searchSuggestions[placeholderIndex]}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Dropdown results */}
+      {focused && results.length > 0 && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
+          background: COLORS.bg, borderRadius: 16, padding: "8px 0",
+          boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
+          border: "1px solid rgba(0,0,0,0.06)",
+          maxHeight: 300, overflow: "auto", zIndex: 200,
+        }}>
+          {results.map(d => (
+            <button key={d.slug}
+              onMouseDown={() => { setQuery(""); navigate(`/destination/${d.slug}`); }}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                width: "100%", padding: "10px 18px", border: "none",
+                background: "transparent", cursor: "pointer",
+                fontFamily: "'Montserrat', sans-serif", fontSize: 13,
+                color: COLORS.dark, textAlign: "left", transition: "background 0.2s",
+              }}
+              onMouseOver={e => e.currentTarget.style.background = COLORS.bgAlt}
+              onMouseOut={e => e.currentTarget.style.background = "transparent"}
+            >
+              <img src={d.cardImg} alt={d.name} style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover" }} />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 13 }}>{d.name}</div>
+                <div style={{ fontSize: 10, color: COLORS.muted, letterSpacing: 1 }}>{d.country}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -92,18 +192,20 @@ function Navbar() {
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70 }}>
         {/* Logo */}
-        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <img src={logo} alt="We Plan Trips" className="nav-logo" style={{ height: 52, width: "auto", objectFit: "contain" }} />
-          <span className="nav-brand" style={{ color: scrolled ? COLORS.primary : "#fff", fontSize: 18, fontWeight: 700, letterSpacing: 2, fontFamily: "'Montserrat', sans-serif", transition: "color 0.3s" }}>WE PLAN TRIPS</span>
+        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
+          <img src={logo} alt="We Plan Trips" className="nav-logo" style={{ height: 57, width: "auto", objectFit: "contain" }} />
         </Link>
+        {/* Center: Search bar */}
+        <NavbarSearch scrolled={scrolled} />
         {/* Desktop Links */}
-        <div style={{ display: "flex", gap: 36, alignItems: "center" }} className="desktop-nav">
+        <div style={{ display: "flex", gap: 28, alignItems: "center", flexShrink: 0 }} className="desktop-nav">
           {links.map(l => (
             <a key={l.name} href={l.href} style={{
               color: scrolled ? COLORS.primary : "rgba(255,255,255,0.9)",
-              textDecoration: "none", fontSize: 13, letterSpacing: 2,
+              textDecoration: "none", fontSize: 12, letterSpacing: 2,
               fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
               transition: "color 0.3s", textTransform: "uppercase",
+              whiteSpace: "nowrap",
             }}
               onMouseOver={e => e.target.style.color = COLORS.secondary}
               onMouseOut={e => e.target.style.color = scrolled ? COLORS.primary : "rgba(255,255,255,0.9)"}>{l.name}</a>
@@ -123,6 +225,10 @@ function Navbar() {
           borderRadius: "0 0 16px 16px",
           boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
         }}>
+          {/* Mobile search */}
+          <div style={{ padding: "0 16px 12px" }}>
+            <NavbarSearch scrolled={true} />
+          </div>
           {links.map(l => <a key={l.name} href={l.href} onClick={() => setMenuOpen(false)} style={{
             display: "block", color: COLORS.primary, padding: "14px 24px",
             textDecoration: "none", fontSize: 14, letterSpacing: 2,
@@ -134,7 +240,7 @@ function Navbar() {
         </div>
       )}
       <style>{`
-        @media(max-width:768px){ .desktop-nav{display:none!important} .hamburger{display:block!important} }
+        @media(max-width:768px){ .desktop-nav{display:none!important} .hamburger{display:block!important} .navbar-search{display:none!important} }
       `}</style>
     </nav>
   );
@@ -145,7 +251,6 @@ function Navbar() {
 function HeroDestinations() {
   const [slide, setSlide] = useState(0);
   const [fade, setFade] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -171,30 +276,36 @@ function HeroDestinations() {
       </div>
 
       {/* Gradient overlay */}
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.55) 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.1) 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 40%, rgba(0,0,0,0.45) 100%)" }} />
 
-      {/* Slide content */}
-      <div style={{
+      {/* Slide content — LEFT ALIGNED */}
+      <div className="hero-content" style={{
         position: "relative", zIndex: 4, height: "100%", display: "flex",
-        flexDirection: "column", alignItems: "center", justifyContent: "center",
-        textAlign: "center", padding: "0 20px",
+        flexDirection: "column", alignItems: "flex-start", justifyContent: "center",
+        textAlign: "left", padding: "0 8vw",
       }}>
         <div style={{
           fontSize: 12, letterSpacing: 6, color: COLORS.secondary,
           fontFamily: "'Montserrat', sans-serif", fontWeight: 700,
           marginBottom: 14, textTransform: "uppercase",
-          opacity: fade ? 1 : 0, transition: "opacity 0.6s", transitionDelay: "0.2s",
+          opacity: fade ? 1 : 0,
+          transform: fade ? "translateY(0)" : "translateY(30px)",
+          transition: "opacity 0.5s ease, transform 0.5s ease",
+          transitionDelay: "0.1s",
         }}>
           ✦ {d.country} ✦
         </div>
 
         <h1 style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: "clamp(48px, 8vw, 100px)", color: "#fff",
-          lineHeight: 1.0, fontWeight: 700, marginBottom: 14,
-          textShadow: "0 4px 30px rgba(0,0,0,0.3)",
-          opacity: fade ? 1 : 0, transform: fade ? "translateY(0)" : "translateY(20px)",
-          transition: "all 0.7s ease", transitionDelay: "0.15s",
+          fontFamily: "'Playfair Display', serif",
+          fontSize: "clamp(52px, 9vw, 120px)", color: "#fff",
+          lineHeight: 0.95, fontWeight: 700, marginBottom: 16,
+          textShadow: "0 4px 30px rgba(0,0,0,0.35)",
+          opacity: fade ? 1 : 0,
+          transform: fade ? "translateY(0)" : "translateY(40px)",
+          transition: "opacity 0.6s ease, transform 0.6s ease",
+          transitionDelay: "0.2s",
         }}>
           {d.name}
         </h1>
@@ -202,27 +313,14 @@ function HeroDestinations() {
         <p style={{
           fontFamily: "'Montserrat', sans-serif",
           fontSize: "clamp(15px, 2vw, 20px)", color: "rgba(255,255,255,0.85)",
-          maxWidth: 500, lineHeight: 1.6, marginBottom: 32,
-          opacity: fade ? 1 : 0, transition: "opacity 0.6s", transitionDelay: "0.3s",
+          maxWidth: 500, lineHeight: 1.6,
+          opacity: fade ? 1 : 0,
+          transform: fade ? "translateY(0)" : "translateY(30px)",
+          transition: "opacity 0.5s ease, transform 0.5s ease",
+          transitionDelay: "0.35s",
         }}>
           {d.tagline}
         </p>
-
-        <button className="hero-cta-btn" onClick={() => navigate(`/destination/${d.slug}`)} style={{
-          display: "inline-block",
-          background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
-          color: "#fff", padding: "14px 40px", borderRadius: 50,
-          border: "none", cursor: "pointer",
-          fontFamily: "'Montserrat', sans-serif", fontSize: 13,
-          fontWeight: 700, letterSpacing: 3, textTransform: "uppercase",
-          boxShadow: "0 8px 30px rgba(30,58,138,0.4)",
-          transition: "transform 0.2s, box-shadow 0.2s",
-          opacity: fade ? 1 : 0, transitionDelay: "0.4s",
-        }}
-          onMouseOver={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 12px 40px rgba(30,58,138,0.6)"; }}
-          onMouseOut={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 8px 30px rgba(30,58,138,0.4)"; }}>
-          Explore Destination
-        </button>
       </div>
 
       {/* Side navigation: vertical dots */}
@@ -281,95 +379,7 @@ function HeroDestinations() {
   );
 }
 
-// ─── SEARCH BAR ──────────────────────────────────────────────────────────────
-
-function SearchBar() {
-  const [query, setQuery] = useState("");
-  const [focused, setFocused] = useState(false);
-  const navigate = useNavigate();
-
-  const results = query.length > 0
-    ? destinations.filter(d => d.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5)
-    : [];
-
-  return (
-    <div className="search-wrapper" style={{
-      position: "relative", zIndex: 20, marginTop: -36,
-      display: "flex", justifyContent: "center", padding: "0 20px",
-    }}>
-      <div className="search-bar" style={{
-        ...CLAY.card,
-        borderRadius: 60, padding: "8px 8px 8px 32px",
-        display: "flex", alignItems: "center", gap: 12,
-        width: "100%", maxWidth: 680,
-        boxShadow: "0 12px 40px rgba(30,58,138,0.1), 0 4px 12px rgba(0,0,0,0.04), inset 1px 1px 2px rgba(255,255,255,0.6)",
-        position: "relative",
-      }}>
-        {/* Search icon */}
-        <span style={{ fontSize: 20, color: COLORS.muted }}>🔍</span>
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setTimeout(() => setFocused(false), 200)}
-          placeholder="Search your dream destination..."
-          style={{
-            flex: 1, border: "none", outline: "none", background: "transparent",
-            fontFamily: "'Montserrat', sans-serif", fontSize: 15, color: COLORS.dark,
-            padding: "12px 0", minWidth: 0,
-          }}
-        />
-        <button className="search-btn" style={{
-          background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
-          color: "#fff", border: "none", borderRadius: 50,
-          padding: "12px 32px", fontFamily: "'Montserrat', sans-serif",
-          fontSize: 13, fontWeight: 700, letterSpacing: 2,
-          textTransform: "uppercase", cursor: "pointer",
-          boxShadow: "0 4px 16px rgba(30,58,138,0.3)",
-          transition: "transform 0.2s, box-shadow 0.2s",
-          whiteSpace: "nowrap",
-        }}
-          onMouseOver={e => { e.target.style.transform = "translateY(-1px)"; e.target.style.boxShadow = "0 6px 20px rgba(30,58,138,0.45)"; }}
-          onMouseOut={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 4px 16px rgba(30,58,138,0.3)"; }}
-          onClick={() => { if (results.length > 0) navigate(`/destination/${results[0].slug}`); }}
-        >
-          Search
-        </button>
-
-        {/* Dropdown results */}
-        {focused && results.length > 0 && (
-          <div style={{
-            position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
-            ...CLAY.card, borderRadius: 20, padding: "8px 0",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.1)",
-            maxHeight: 300, overflow: "auto",
-          }}>
-            {results.map(d => (
-              <button key={d.slug}
-                onMouseDown={() => { setQuery(""); navigate(`/destination/${d.slug}`); }}
-                style={{
-                  display: "flex", alignItems: "center", gap: 14,
-                  width: "100%", padding: "12px 24px", border: "none",
-                  background: "transparent", cursor: "pointer",
-                  fontFamily: "'Montserrat', sans-serif", fontSize: 14,
-                  color: COLORS.dark, textAlign: "left", transition: "background 0.2s",
-                }}
-                onMouseOver={e => e.currentTarget.style.background = COLORS.bgAlt}
-                onMouseOut={e => e.currentTarget.style.background = "transparent"}
-              >
-                <img src={d.cardImg} alt={d.name} style={{ width: 44, height: 44, borderRadius: 12, objectFit: "cover" }} />
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>{d.name}</div>
-                  <div style={{ fontSize: 11, color: COLORS.muted, letterSpacing: 1 }}>{d.country} · {d.packages.length} packages</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+// SearchBar removed — now integrated into Navbar as NavbarSearch
 
 // ─── SECTION TITLE ───────────────────────────────────────────────────────────
 
@@ -407,15 +417,15 @@ function getSlideGroup(index) {
   ];
 }
 
-function GalleryFrame({ dest, style: extraStyle }) {
+function GalleryFrame({ dest, aspectRatio }) {
   const navigate = useNavigate();
   return (
     <div
       onClick={() => navigate(`/destination/${dest.slug}`)}
       style={{
-        ...extraStyle,
         position: "relative", overflow: "hidden", cursor: "pointer",
         borderRadius: 24,
+        aspectRatio: aspectRatio || "16 / 10",
         boxShadow: "8px 8px 24px rgba(0,0,0,0.08), -4px -4px 14px rgba(255,255,255,0.7), inset 1px 1px 2px rgba(255,255,255,0.5)",
         border: "1px solid rgba(0,0,0,0.04)",
         transition: "box-shadow 0.3s, border 0.3s",
@@ -437,7 +447,7 @@ function GalleryFrame({ dest, style: extraStyle }) {
         if (ov) ov.style.opacity = "0";
       }}
     >
-      <img className="gf-img" src={dest.img} alt={dest.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease" }} loading="lazy" />
+      <img className="gf-img" src={dest.img} alt={dest.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease" }} loading="lazy" />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 45%, transparent 100%)" }} />
       <div className="gf-hover" style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(30,58,138,0.3), rgba(249,115,22,0.12))", opacity: 0, transition: "opacity 0.4s" }} />
       {/* Tag */}
@@ -446,7 +456,7 @@ function GalleryFrame({ dest, style: extraStyle }) {
       </div>
       {/* Text */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "22px 24px" }}>
-        <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(20px, 2.2vw, 32px)", color: "#fff", fontWeight: 700, lineHeight: 1.15, marginBottom: 4, textShadow: "0 2px 12px rgba(0,0,0,0.35)" }}>{dest.name}</h3>
+        <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(20px, 2.2vw, 32px)", color: "#fff", fontWeight: 700, lineHeight: 1.15, marginBottom: 4, textShadow: "0 2px 12px rgba(0,0,0,0.35)" }}>{dest.name}</h3>
         <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.75)", fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
           <span>Explore</span><span style={{ fontSize: 14 }}>→</span>
         </div>
@@ -464,12 +474,13 @@ function DestinationGallery() {
   const totalSlides = galleryDestinations.length;
 
   const goTo = (newIndex, isManual = false) => {
+    if (!fade) return; // prevent rapid clicks
     setFade(false);
     setTimeout(() => {
       setSlideIndex(((newIndex % totalSlides) + totalSlides) % totalSlides);
       setFade(true);
       if (isManual) setManualCount(c => c + 1);
-    }, 350);
+    }, 400);
   };
 
   // Auto-scroll after 2 manual interactions
@@ -519,15 +530,15 @@ function DestinationGallery() {
         {/* 3-frame mosaic: 1 large left + 2 stacked right */}
         <div className="gallery-mosaic" style={{
           display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20,
-          opacity: fade ? 1 : 0, transform: fade ? "scale(1)" : "scale(0.97)",
-          transition: "opacity 0.4s ease, transform 0.4s ease",
+          opacity: fade ? 1 : 0,
+          transition: "opacity 0.4s ease",
         }}>
-          {/* Frame 1: Large */}
-          <GalleryFrame dest={group[0]} style={{ height: 480 }} />
-          {/* Frame 2 & 3: Stacked */}
+          {/* Frame 1: Large — uses aspect-ratio for stable sizing */}
+          <GalleryFrame dest={group[0]} aspectRatio="4 / 3" />
+          {/* Frame 2 & 3: Stacked — each uses aspect-ratio */}
           <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", gap: 20 }}>
-            <GalleryFrame dest={group[1]} style={{ height: "100%" }} />
-            <GalleryFrame dest={group[2]} style={{ height: "100%" }} />
+            <GalleryFrame dest={group[1]} aspectRatio="16 / 9" />
+            <GalleryFrame dest={group[2]} aspectRatio="16 / 9" />
           </div>
         </div>
 
@@ -561,31 +572,111 @@ function DestinationGallery() {
 
 // ─── EXPERIENCES ─────────────────────────────────────────────────────────────
 
+function ExperienceCard({ item, index, visible }) {
+  return (
+    <div
+      className="exp-card"
+      style={{
+        position: "relative", overflow: "hidden", borderRadius: 24,
+        aspectRatio: "3 / 4",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(40px)",
+        transition: `all 0.7s ${index * 0.15}s`,
+        cursor: "default",
+        boxShadow: "10px 10px 30px rgba(0,0,0,0.1), -4px -4px 14px rgba(255,255,255,0.7)",
+        border: "1px solid rgba(0,0,0,0.04)",
+      }}
+    >
+      {/* Background image */}
+      <img
+        src={item.img}
+        alt={item.title}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease" }}
+        className="exp-card-img"
+        loading="lazy"
+      />
+      {/* Gradient overlay */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.5) 40%, rgba(15,23,42,0.15) 100%)",
+      }} />
+      {/* Accent border on hover - top line */}
+      <div className="exp-card-accent" style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 4,
+        background: `linear-gradient(90deg, ${COLORS.secondary}, ${COLORS.primaryLight})`,
+        transform: "scaleX(0)", transformOrigin: "left",
+        transition: "transform 0.4s ease",
+      }} />
+      {/* Number badge */}
+      <div style={{
+        position: "absolute", top: 24, left: 24,
+        fontFamily: "'Playfair Display', serif",
+        fontSize: 64, fontWeight: 700,
+        color: "rgba(255,255,255,0.08)",
+        lineHeight: 1,
+      }}>
+        {String(index + 1).padStart(2, "0")}
+      </div>
+      {/* Content */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        padding: "32px 28px",
+      }}>
+        <div className="exp-card-icon" style={{
+          width: 48, height: 48, borderRadius: 14,
+          background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryLight})`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 22, marginBottom: 18,
+          boxShadow: "0 4px 16px rgba(249,115,22,0.35)",
+          transition: "transform 0.3s ease",
+        }}>
+          {item.icon}
+        </div>
+        <h3 style={{
+          fontFamily: "'Playfair Display', serif",
+          fontSize: "clamp(20px, 2vw, 26px)", color: "#fff",
+          fontWeight: 700, lineHeight: 1.2, marginBottom: 10,
+        }}>
+          {item.title}
+        </h3>
+        <p className="exp-card-desc" style={{
+          fontFamily: "'Montserrat', sans-serif", fontSize: 13,
+          color: "rgba(255,255,255,0.6)", lineHeight: 1.7,
+          maxHeight: 0, overflow: "hidden",
+          transition: "max-height 0.4s ease, opacity 0.4s ease",
+          opacity: 0,
+        }}>
+          {item.desc}
+        </p>
+      </div>
+
+      <style>{`
+        .exp-card:hover .exp-card-img { transform: scale(1.08); }
+        .exp-card:hover .exp-card-accent { transform: scaleX(1) !important; }
+        .exp-card:hover .exp-card-icon { transform: translateY(-4px); }
+        .exp-card:hover .exp-card-desc { max-height: 100px !important; opacity: 1 !important; }
+      `}</style>
+    </div>
+  );
+}
+
 function Experiences() {
   const [ref, visible] = useScrollAnimation();
   const items = [
-    { icon: "🏄", title: "Special Activities", desc: "Snorkeling, hiking, skydiving — we book the extraordinary." },
-    { icon: "🗺️", title: "Private Travel Planning", desc: "Bespoke itineraries crafted around your every preference." },
-    { icon: "🏨", title: "Luxury Tours", desc: "Curated stays at the world's finest hotels and resorts." },
-    { icon: "🌍", title: "Best Destinations", desc: "Expertly vetted bucket-list destinations across 40+ countries." },
+    { icon: "🏄", title: "Special Activities", desc: "Snorkeling, hiking, skydiving — we book the extraordinary experiences you'll remember forever.", img: "https://images.unsplash.com/photo-1530053969600-caed2596d242?w=600&q=80" },
+    { icon: "🗺️", title: "Private Travel Planning", desc: "Bespoke itineraries crafted around your every preference by expert travel designers.", img: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80" },
+    { icon: "🏨", title: "Luxury Tours", desc: "Curated stays at the world's finest hotels, resorts, and hidden boutique retreats.", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80" },
+    { icon: "🌍", title: "Best Destinations", desc: "Expertly vetted bucket-list destinations across 40+ countries, handpicked for you.", img: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80" },
   ];
   return (
     <section ref={ref} id="tours" style={{ background: COLORS.bgAlt, padding: "90px 5vw" }}>
-      <SectionTitle tag="✦ Why Choose Us" title="The WE PLAN TRIPS Experience" />
-      <div className="experiences-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 28 }}>
+      <SectionTitle tag="✦ Why Choose Us" title="The WE PLAN TRIPS Experience" sub="Four pillars that make every journey with us truly unforgettable." />
+      <div className="experiences-grid" style={{
+        display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24,
+        maxWidth: 1200, margin: "0 auto",
+      }}>
         {items.map((item, i) => (
-          <div key={item.title} style={{
-            ...CLAY.card,
-            padding: "40px 30px", textAlign: "center",
-            opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)",
-            transition: `all 0.6s ${i * 0.12}s`, cursor: "default",
-          }}
-            onMouseOver={e => { Object.assign(e.currentTarget.style, CLAY.cardHover); e.currentTarget.style.transform = "translateY(-6px)"; }}
-            onMouseOut={e => { e.currentTarget.style.boxShadow = CLAY.card.boxShadow; e.currentTarget.style.border = CLAY.card.border; e.currentTarget.style.transform = "translateY(0)"; }}>
-            <div style={{ fontSize: 50, marginBottom: 20 }}>{item.icon}</div>
-            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: COLORS.dark, fontWeight: 600, marginBottom: 12 }}>{item.title}</h3>
-            <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 13, color: COLORS.muted, lineHeight: 1.7 }}>{item.desc}</p>
-          </div>
+          <ExperienceCard key={item.title} item={item} index={i} visible={visible} />
         ))}
       </div>
     </section>
@@ -695,7 +786,7 @@ function Stats() {
     { val: "400+", label: "Packages" },
     { val: "4.9★", label: "Average Rating" },
   ];
-   return (
+  return (
     <section ref={ref} className="stats-section" style={{
       background: `linear-gradient(135deg, ${COLORS.primary}, #2563eb)`,
       padding: "70px 5vw",
@@ -781,49 +872,64 @@ function ContactSection() {
 // ─── FOOTER ──────────────────────────────────────────────────────────────────
 
 function Footer() {
+  const footerDestinations = [
+    { name: "Bali", slug: "bali" },
+    { name: "Dubai", slug: "dubai" },
+    { name: "Japan", slug: "japan" },
+    { name: "Greece", slug: "greece" },
+    { name: "Switzerland", slug: "switzerland" },
+    { name: "Thailand", slug: "thailand" },
+    { name: "Turkey", slug: "turkey" },
+    { name: "Paris", slug: "paris" },
+  ];
+
+  const quickLinks = [
+    { name: "About Us", href: "/about" },
+    { name: "Contact", href: "/#contact" },
+    { name: "Privacy Policy", href: "#" },
+    { name: "Terms and Conditions", href: "#" },
+  ];
+
   return (
     <footer style={{ background: "#0f172a", borderTop: "none", padding: "70px 5vw 30px" }}>
-      <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 40, marginBottom: 50 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-            <img src={logo} alt="We Plan Trips" style={{ height: 44, width: "auto", objectFit: "contain" }} />
-            <span style={{ fontFamily: "'Montserrat', sans-serif", color: "#fff", fontSize: 16, fontWeight: 700, letterSpacing: 2 }}>WE PLAN TRIPS</span>
-          </div>
-          <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>Curating extraordinary journeys across the globe since 2015. Your world, your way.</p>
-          <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
-            {["𝕏", "f", "in", "📷"].map(s => (
-              <div key={s} style={{
-                width: 36, height: 36, borderRadius: "50%",
-                border: "1px solid rgba(255,255,255,0.15)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", color: "rgba(255,255,255,0.5)", fontSize: 14,
-                transition: "all 0.2s",
+      <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr 1fr", gap: 40, marginBottom: 50, alignItems: "start" }}>
+        {/* Left: Logo only */}
+        <div className="footer-logo-col" style={{ display: "flex", alignItems: "flex-start" }}>
+          <Link to="/">
+            <img src={logo} alt="We Plan Trips" style={{ height: 57, width: "auto", objectFit: "contain" }} />
+          </Link>
+        </div>
+
+        {/* Center: Destinations */}
+        <div className="footer-dest-col" style={{ textAlign: "center" }}>
+          <h4 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11, color: COLORS.primaryLight, letterSpacing: 3, textTransform: "uppercase", fontWeight: 700, marginBottom: 18 }}>Destinations</h4>
+          <div className="footer-dest-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 24px", justifyContent: "center" }}>
+            {footerDestinations.map(d => (
+              <Link key={d.slug} to={`/destination/${d.slug}`} style={{
+                fontFamily: "'Montserrat', sans-serif",
+                fontSize: 13, color: "rgba(255,255,255,0.45)",
+                textDecoration: "none", transition: "color 0.2s",
+                textAlign: "center",
               }}
-                onMouseOver={e => { e.currentTarget.style.border = `1px solid ${COLORS.primary}`; e.currentTarget.style.color = COLORS.primaryLight; }}
-                onMouseOut={e => { e.currentTarget.style.border = "1px solid rgba(255,255,255,0.15)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)"; }}>
-                {s}
-              </div>
+                onMouseOver={e => e.target.style.color = COLORS.primaryLight}
+                onMouseOut={e => e.target.style.color = "rgba(255,255,255,0.45)"}>{d.name}</Link>
             ))}
           </div>
         </div>
-        {[
-          { title: "Popular Destinations", links: ["Bali", "Dubai", "Japan", "Greece", "Switzerland", "Thailand", "Turkey"] },
-          { title: "Travel Packages", links: ["Honeymoon Packages", "Adventure Tours", "Family Holidays", "Solo Travel", "Luxury Retreats"] },
-          { title: "Company", links: ["About WE PLAN TRIPS", "Blog", "Careers", "Press", "Contact Us", "Privacy Policy"] },
-        ].map(col => (
-          <div key={col.title}>
-            <h4 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11, color: COLORS.primaryLight, letterSpacing: 3, textTransform: "uppercase", fontWeight: 700, marginBottom: 18 }}>{col.title}</h4>
-            {col.links.map(l => (
-              <a key={l} href="#" style={{
-                display: "block", fontFamily: "'Montserrat', sans-serif",
-                fontSize: 13, color: "rgba(255,255,255,0.45)",
-                textDecoration: "none", marginBottom: 10, transition: "color 0.2s",
-              }}
-                onMouseOver={e => e.target.style.color = COLORS.primaryLight}
-                onMouseOut={e => e.target.style.color = "rgba(255,255,255,0.45)"}>{l}</a>
-            ))}
-          </div>
-        ))}
+
+        {/* Right: Quick Links */}
+        <div className="footer-links-col" style={{ textAlign: "right" }}>
+          <h4 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11, color: COLORS.primaryLight, letterSpacing: 3, textTransform: "uppercase", fontWeight: 700, marginBottom: 18 }}>Quick Links</h4>
+          {quickLinks.map(l => (
+            <a key={l.name} href={l.href} style={{
+              display: "block", fontFamily: "'Montserrat', sans-serif",
+              fontSize: 13, color: "rgba(255,255,255,0.45)",
+              textDecoration: "none", marginBottom: 10, transition: "color 0.2s",
+            }}
+              onMouseOver={e => e.target.style.color = COLORS.primaryLight}
+              onMouseOut={e => e.target.style.color = "rgba(255,255,255,0.45)"}>{l.name}</a>
+          ))}
+        </div>
       </div>
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.3)" }}>© 2026 WE PLAN TRIPS. All rights reserved.</p>
@@ -838,6 +944,8 @@ function Footer() {
 function LeadOverlay() {
   const [visible, setVisible] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", phone: "", email: "", destination: "" });
 
   useEffect(() => {
@@ -856,13 +964,35 @@ function LeadOverlay() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // No backend yet — just log and show thank-you
-    console.log("Lead captured:", form);
-    setSubmitted(true);
-    setTimeout(() => {
-      setVisible(false);
-      sessionStorage.setItem("leadShown", "1");
-    }, 2200);
+    setSending(true);
+    setError("");
+
+    // Replace these with your actual EmailJS credentials
+    const SERVICE_ID = "service_jwdgmca";
+    const TEMPLATE_ID = "template_qpk6mdk";
+    const PUBLIC_KEY = "3R051NdGcwRqj5S1w";
+
+    const templateParams = {
+      name: form.name,
+      phone: form.phone,
+      email: form.email,
+      destination: form.destination,
+    };
+
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+      .then(() => {
+        setSending(false);
+        setSubmitted(true);
+        setTimeout(() => {
+          setVisible(false);
+          sessionStorage.setItem("leadShown", "1");
+        }, 2200);
+      })
+      .catch((err) => {
+        console.error("EmailJS error:", err);
+        setSending(false);
+        setError("Something went wrong. Please try again.");
+      });
   };
 
   if (!visible) return null;
@@ -921,36 +1051,37 @@ function LeadOverlay() {
             </div>
             <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
               <input required placeholder="Your name" value={form.name}
-                onChange={e => setForm({...form, name: e.target.value})}
+                onChange={e => setForm({ ...form, name: e.target.value })}
                 style={inputStyle}
                 onFocus={e => e.target.style.borderColor = COLORS.primary}
                 onBlur={e => e.target.style.borderColor = COLORS.bgAlt2} />
               <input required placeholder="Phone number" type="tel" value={form.phone}
-                onChange={e => setForm({...form, phone: e.target.value})}
+                onChange={e => setForm({ ...form, phone: e.target.value })}
                 style={inputStyle}
                 onFocus={e => e.target.style.borderColor = COLORS.primary}
                 onBlur={e => e.target.style.borderColor = COLORS.bgAlt2} />
               <input required placeholder="Email address" type="email" value={form.email}
-                onChange={e => setForm({...form, email: e.target.value})}
+                onChange={e => setForm({ ...form, email: e.target.value })}
                 style={inputStyle}
                 onFocus={e => e.target.style.borderColor = COLORS.primary}
                 onBlur={e => e.target.style.borderColor = COLORS.bgAlt2} />
               <input required placeholder="Where do you want to visit?" value={form.destination}
-                onChange={e => setForm({...form, destination: e.target.value})}
+                onChange={e => setForm({ ...form, destination: e.target.value })}
                 style={inputStyle}
                 onFocus={e => e.target.style.borderColor = COLORS.primary}
                 onBlur={e => e.target.style.borderColor = COLORS.bgAlt2} />
-              <button type="submit" style={{
-                background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
+              {error && <p style={{ color: "#ef4444", fontFamily: "'Montserrat', sans-serif", fontSize: 13, textAlign: "center", margin: 0 }}>{error}</p>}
+              <button type="submit" disabled={sending} style={{
+                background: sending ? "#94a3b8" : `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
                 color: "#fff", border: "none", padding: "15px 36px", borderRadius: 50,
                 fontFamily: "'Montserrat', sans-serif", fontSize: 13, fontWeight: 700,
-                letterSpacing: 3, textTransform: "uppercase", cursor: "pointer",
+                letterSpacing: 3, textTransform: "uppercase", cursor: sending ? "not-allowed" : "pointer",
                 boxShadow: "0 6px 20px rgba(30,58,138,0.3)", transition: "all 0.2s",
-                marginTop: 4,
+                marginTop: 4, opacity: sending ? 0.7 : 1,
               }}
-                onMouseOver={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 10px 28px rgba(30,58,138,0.4)"; }}
+                onMouseOver={e => { if (!sending) { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 10px 28px rgba(30,58,138,0.4)"; } }}
                 onMouseOut={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 6px 20px rgba(30,58,138,0.3)"; }}>
-                Submit
+                {sending ? "Sending..." : "Submit"}
               </button>
             </form>
           </>
@@ -971,7 +1102,6 @@ function HomePage() {
   return (
     <>
       <HeroDestinations />
-      <SearchBar />
       <div style={{ paddingTop: 40 }} />
       <DestinationCarousel destinations={destinations} />
       <Stats />
@@ -991,7 +1121,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
         html{scroll-behavior:smooth;}
         body{background:#ffffff;color:#1a1a2e;overflow-x:hidden;}
@@ -1003,32 +1133,26 @@ export default function App() {
         /* ─── MOBILE RESPONSIVE ──────────────────────── */
         @media(max-width: 768px) {
           /* Navbar */
-          .nav-logo { height: 40px !important; }
-          .nav-brand { font-size: 14px !important; letter-spacing: 1px !important; }
+          .nav-logo { height: 44px !important; }
 
           /* Hero */
           .hero-side-dots { display: none !important; }
-          .hero-ticker { bottom: 80px !important; gap: 6px !important; }
-          .hero-ticker-btn { padding: 6px 12px !important; font-size: 9px !important; letter-spacing: 1px !important; }
-          .hero-counter { bottom: 40px !important; font-size: 10px !important; }
-          .hero-cta-btn { padding: 12px 28px !important; font-size: 11px !important; letter-spacing: 2px !important; }
+          .hero-content { padding: 0 5vw !important; }
+          .hero-content h1 { font-size: clamp(38px, 10vw, 52px) !important; }
+          .hero-ticker { display: none !important; }
+          .hero-counter { bottom: 30px !important; font-size: 10px !important; }
 
-          /* Search bar */
-          .search-wrapper { padding: 0 12px !important; margin-top: -28px !important; }
-          .search-bar { border-radius: 50px !important; padding: 6px 6px 6px 18px !important; gap: 8px !important; }
-          .search-bar input { font-size: 13px !important; padding: 10px 0 !important; }
-          .search-btn { padding: 10px 18px !important; font-size: 11px !important; letter-spacing: 1px !important; }
+          /* Search bar is now in navbar — no standalone search styles needed */
 
           /* Gallery mosaic */
           .gallery-mosaic { grid-template-columns: 1fr !important; gap: 14px !important; }
-          .gallery-mosaic > div:first-child { height: 260px !important; }
           .gallery-mosaic > div:nth-child(2) { gap: 14px !important; }
-          .gallery-mosaic > div:nth-child(2) > div { height: 200px !important; }
           #packages > div:nth-child(2) > button:first-child { left: 4px !important; width: 38px !important; height: 38px !important; font-size: 16px !important; }
           #packages > div:nth-child(2) > button:nth-child(2) { right: 4px !important; width: 38px !important; height: 38px !important; font-size: 16px !important; }
 
           /* Experiences */
-          .experiences-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .experiences-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
+          .exp-card-desc { max-height: 80px !important; opacity: 1 !important; }
 
           /* Stats */
           .stats-section { padding: 50px 5vw !important; }
@@ -1039,13 +1163,17 @@ export default function App() {
 
           /* Footer */
           .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .footer-logo-col { justify-content: center !important; }
+          .footer-dest-col { text-align: center !important; }
+          .footer-links-col { text-align: center !important; }
+          .footer-dest-grid { grid-template-columns: 1fr 1fr !important; gap: 8px 16px !important; }
 
           /* Promo banner & video section */
-          section[style*="height: 380"] { height: 300px !important; }
-          section[style*="height: 520"] { height: 380px !important; }
+          section[style*="height: 380"] { height: 280px !important; }
+          section[style*="height: 520"] { height: 340px !important; }
 
           /* Lead overlay */
-          .lead-overlay-card { padding: 28px 20px !important; border-radius: 22px !important; }
+          .lead-overlay-card { padding: 28px 20px !important; border-radius: 22px !important; max-height: 90vh !important; overflow-y: auto !important; }
 
           /* Section titles */
           section { padding-left: 4vw !important; padding-right: 4vw !important; }
@@ -1053,12 +1181,12 @@ export default function App() {
 
         @media(max-width: 480px) {
           /* Extra small devices */
-          .hero-ticker { display: none !important; }
-          .hero-counter { bottom: 30px !important; }
-          .search-btn { padding: 10px 14px !important; font-size: 10px !important; }
+          .hero-content h1 { font-size: clamp(32px, 11vw, 42px) !important; }
+          .hero-counter { bottom: 20px !important; }
           .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .gallery-mosaic > div:first-child { height: 200px !important; }
-          .gallery-mosaic > div:nth-child(2) > div { height: 160px !important; }
+          .gallery-mosaic > div:first-child { aspect-ratio: 3/2 !important; }
+          .experiences-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .footer-dest-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
       <Navbar />
@@ -1066,6 +1194,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/destination/:slug" element={<DestinationPage />} />
+        <Route path="/destination/:destSlug/package/:pkgSlug" element={<PackagePage />} />
         <Route path="/about" element={<AboutPage />} />
       </Routes>
       <Footer />

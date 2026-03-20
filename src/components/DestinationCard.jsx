@@ -78,8 +78,6 @@ export default function DestinationCard({ destination, offset }) {
                                 className="flex items-center gap-2 text-xs font-semibold tracking-wide"
                                 style={{ fontFamily: "'Montserrat', sans-serif", color: COLORS.secondary }}
                             >
-                                <span>{destination.packages.length} packages</span>
-                                <span style={{ color: "rgba(249,115,22,0.4)" }}>—</span>
                                 <span>Explore →</span>
                             </motion.div>
                         )}

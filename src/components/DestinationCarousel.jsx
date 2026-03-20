@@ -14,7 +14,7 @@ const COLORS = {
 };
 
 export default function DestinationCarousel({ destinations }) {
-    const [activeIndex, setActiveIndex] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(() => Math.floor(destinations.length / 2));
     const [isDragging, setIsDragging] = useState(false);
     const [dragStartX, setDragStartX] = useState(0);
     const [dragDeltaX, setDragDeltaX] = useState(0);
