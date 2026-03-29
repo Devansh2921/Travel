@@ -118,7 +118,7 @@ function NavbarSearch({ scrolled }) {
           />
           {query.length === 0 && (
             <span className="nav-search-placeholder" style={{
-              position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
+              position: "absolute", left: 0, top: "50%",
               fontFamily: "'Montserrat', sans-serif", fontSize: 13,
               color: scrolled ? COLORS.muted : "rgba(255,255,255,0.55)",
               pointerEvents: "none", transition: "color 0.3s, opacity 0.3s, transform 0.3s",
