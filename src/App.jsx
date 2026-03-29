@@ -93,7 +93,7 @@ function NavbarSearch({ scrolled }) {
     : [];
 
   return (
-    <div className="navbar-search" style={{ position: "relative", flex: "0 1 420px", margin: "0 24px" }}>
+    <div className="navbar-search" style={{ position: "relative", flex: "1 1 0", maxWidth: 420, margin: "0 12px", minWidth: 0 }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 8,
         background: scrolled ? COLORS.bgAlt : "rgba(255,255,255,0.15)",
@@ -190,12 +190,12 @@ function Navbar() {
       boxShadow: scrolled ? "0 4px 20px rgba(0,0,0,0.06)" : "none",
       padding: "0 5vw",
     }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70, gap: 8 }}>
         {/* Logo */}
         <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
           <img src={logo} alt="We Plan Trips" className="nav-logo" style={{ height: 57, width: "auto", objectFit: "contain" }} />
         </Link>
-        {/* Center: Search bar */}
+        {/* Center: Search bar — always visible */}
         <NavbarSearch scrolled={scrolled} />
         {/* Desktop Links */}
         <div style={{ display: "flex", gap: 28, alignItems: "center", flexShrink: 0 }} className="desktop-nav">
@@ -215,7 +215,7 @@ function Navbar() {
         <button onClick={() => setMenuOpen(!menuOpen)} style={{
           display: "none", background: "none", border: "none",
           color: scrolled ? COLORS.primary : "#fff", fontSize: 24, cursor: "pointer",
-          transition: "color 0.3s",
+          transition: "color 0.3s", flexShrink: 0,
         }} className="hamburger">☰</button>
       </div>
       {menuOpen && (
@@ -225,10 +225,6 @@ function Navbar() {
           borderRadius: "0 0 16px 16px",
           boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
         }}>
-          {/* Mobile search */}
-          <div style={{ padding: "0 16px 12px" }}>
-            <NavbarSearch scrolled={true} />
-          </div>
           {links.map(l => <a key={l.name} href={l.href} onClick={() => setMenuOpen(false)} style={{
             display: "block", color: COLORS.primary, padding: "14px 24px",
             textDecoration: "none", fontSize: 14, letterSpacing: 2,
@@ -240,7 +236,8 @@ function Navbar() {
         </div>
       )}
       <style>{`
-        @media(max-width:768px){ .desktop-nav{display:none!important} .hamburger{display:block!important} .navbar-search{display:none!important} }
+        @media(max-width:768px){ .desktop-nav{display:none!important} .hamburger{display:block!important} }
+        @media(max-width:768px){ .navbar-search { max-width: none!important; margin: 0 8px!important; } .navbar-search input { font-size: 12px!important; } .nav-search-placeholder { font-size: 11px!important; } }
       `}</style>
     </nav>
   );
@@ -1115,9 +1112,107 @@ function HomePage() {
   );
 }
 
+// ─── SPLASH LOADER ──────────────────────────────────────────────────────────
+
+function SplashLoader({ onFinish }) {
+  const [fadeOut, setFadeOut] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFadeOut(true), 1800);
+    const finish = setTimeout(() => onFinish(), 2300);
+    return () => { clearTimeout(timer); clearTimeout(finish); };
+  }, [onFinish]);
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 99999,
+      background: "linear-gradient(135deg, #0f172a 0%, #1E3A8A 50%, #0f172a 100%)",
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      opacity: fadeOut ? 0 : 1,
+      transition: "opacity 0.5s ease-out",
+      pointerEvents: fadeOut ? "none" : "auto",
+    }}>
+      {/* Decorative circles */}
+      <div style={{
+        position: "absolute", width: 300, height: 300, borderRadius: "50%",
+        border: "1px solid rgba(255,255,255,0.06)",
+        animation: "loaderRing 3s linear infinite",
+      }} />
+      <div style={{
+        position: "absolute", width: 400, height: 400, borderRadius: "50%",
+        border: "1px solid rgba(255,255,255,0.03)",
+        animation: "loaderRing 4s linear infinite reverse",
+      }} />
+
+      {/* Flipping logo */}
+      <div style={{
+        width: 100, height: 100,
+        animation: "logoFlip 1.6s ease-in-out infinite",
+        perspective: 800,
+        marginBottom: 32,
+      }}>
+        <img src={logo} alt="We Plan Trips" style={{
+          width: "100%", height: "100%", objectFit: "contain",
+          filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.3))",
+        }} />
+      </div>
+
+      {/* Brand text */}
+      <div style={{
+        fontFamily: "'Playfair Display', serif",
+        fontSize: "clamp(16px, 4vw, 22px)",
+        color: "#fff",
+        letterSpacing: 8,
+        fontWeight: 700,
+        textAlign: "center",
+        opacity: 0,
+        animation: "loaderTextIn 0.8s ease-out 0.4s forwards",
+      }}>
+        WE PLAN YOU EXPLORE
+      </div>
+
+      {/* Subtle loading bar */}
+      <div style={{
+        width: 120, height: 3, borderRadius: 3,
+        background: "rgba(255,255,255,0.1)",
+        marginTop: 28, overflow: "hidden",
+      }}>
+        <div style={{
+          height: "100%", borderRadius: 3,
+          background: "linear-gradient(90deg, #F97316, #FB923C)",
+          animation: "loaderBar 1.8s ease-in-out forwards",
+        }} />
+      </div>
+
+      <style>{`
+        @keyframes logoFlip {
+          0%   { transform: perspective(800px) rotateY(0deg); }
+          50%  { transform: perspective(800px) rotateY(180deg); }
+          100% { transform: perspective(800px) rotateY(360deg); }
+        }
+        @keyframes loaderTextIn {
+          from { opacity: 0; transform: translateY(12px); letter-spacing: 14px; }
+          to   { opacity: 1; transform: translateY(0); letter-spacing: 8px; }
+        }
+        @keyframes loaderBar {
+          0%   { width: 0%; }
+          100% { width: 100%; }
+        }
+        @keyframes loaderRing {
+          0%   { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 // ─── APP ────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [showLoader, setShowLoader] = useState(true);
+
   return (
     <BrowserRouter>
       <style>{`
@@ -1141,8 +1236,6 @@ export default function App() {
           .hero-content h1 { font-size: clamp(38px, 10vw, 52px) !important; }
           .hero-ticker { display: none !important; }
           .hero-counter { bottom: 30px !important; font-size: 10px !important; }
-
-          /* Search bar is now in navbar — no standalone search styles needed */
 
           /* Gallery mosaic */
           .gallery-mosaic { grid-template-columns: 1fr !important; gap: 14px !important; }
@@ -1189,6 +1282,7 @@ export default function App() {
           .footer-dest-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+      {showLoader && <SplashLoader onFinish={() => setShowLoader(false)} />}
       <Navbar />
       <LeadOverlay />
       <Routes>

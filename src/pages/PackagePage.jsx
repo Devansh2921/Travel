@@ -2,24 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import destinations from "../data/destinations";
+import "./PackagePage.css";
 
-const COLORS = {
-    primary: "#1E3A8A",
-    primaryLight: "#3B82F6",
-    secondary: "#F97316",
-    secondaryLight: "#FB923C",
-    dark: "#1a1a2e",
-    muted: "#64748b",
-    bg: "#ffffff",
-    bgAlt: "#f1f5f9",
-    bgAlt2: "#e2e8f0",
-};
-
-// Online PNG icon URLs (flat style travel icons)
 const ICONS = {
     duration: "https://cdn-icons-png.flaticon.com/128/2784/2784459.png",
     calendar: "https://cdn-icons-png.flaticon.com/128/2693/2693507.png",
-    price: "https://cdn-icons-png.flaticon.com/128/2489/2489756.png",
     hotel: "https://cdn-icons-png.flaticon.com/128/2933/2933921.png",
     checkIn: "https://cdn-icons-png.flaticon.com/128/3652/3652267.png",
     checkOut: "https://cdn-icons-png.flaticon.com/128/3652/3652191.png",
@@ -32,7 +19,6 @@ const ICONS = {
     suitcase: "https://cdn-icons-png.flaticon.com/128/3460/3460335.png",
 };
 
-// Destination-specific gallery images for richer visual content
 const DEST_IMAGES = {
     almaty: [
         "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80",
@@ -42,12 +28,77 @@ const DEST_IMAGES = {
         "https://images.unsplash.com/photo-1555899434-94d1368aa7af?w=800&q=80",
         "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80",
     ],
+    "hong-kong": [
+        "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=800&q=80",
+        "https://images.unsplash.com/photo-1507941097613-9f80999190de?w=800&q=80",
+        "https://images.unsplash.com/photo-1513415277900-a62401e19be4?w=800&q=80",
+        "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800&q=80",
+        "https://images.unsplash.com/photo-1576788369575-4ab045b9287e?w=800&q=80",
+        "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=80",
+    ],
+    greece: [
+        "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&q=80",
+        "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80",
+        "https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80",
+        "https://images.unsplash.com/photo-1601581875309-fafbf2d3ed3a?w=800&q=80",
+        "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800&q=80",
+        "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&q=80",
+    ],
+    malaysia: [
+        "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&q=80",
+        "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80",
+        "https://images.unsplash.com/photo-1548545083-efb5b40b5d96?w=800&q=80",
+        "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80",
+        "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800&q=80",
+        "https://images.unsplash.com/photo-1623110703897-c68f45f48b52?w=800&q=80",
+    ],
+    singapore: [
+        "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80",
+        "https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800&q=80",
+        "https://images.unsplash.com/photo-1508964942454-1a56651d54ac?w=800&q=80",
+        "https://images.unsplash.com/photo-1570610545900-f4b1880a0879?w=800&q=80",
+        "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80",
+        "https://images.unsplash.com/photo-1506803682981-8e9a7f493d62?w=800&q=80",
+    ],
+    japan: [
+        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80",
+        "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80",
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+        "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&q=80",
+        "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=800&q=80",
+        "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80",
+    ],
+    bali: [
+        "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80",
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+        "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=800&q=80",
+        "https://images.unsplash.com/photo-1573790387438-4da905039392?w=800&q=80",
+        "https://images.unsplash.com/photo-1604999333679-b86d54738315?w=800&q=80",
+        "https://images.unsplash.com/photo-1550438190-d8471f2f8822?w=800&q=80",
+    ],
+    dubai: [
+        "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80",
+        "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800&q=80",
+        "https://images.unsplash.com/photo-1547226872-b7987f3f5e90?w=800&q=80",
+        "https://images.unsplash.com/photo-1565552645632-d725f8bfc19a?w=800&q=80",
+        "https://images.unsplash.com/photo-1526495124232-a04e1849168c?w=800&q=80",
+        "https://images.unsplash.com/photo-1549877452-9c387954fbc2?w=800&q=80",
+    ],
+    "northern-lights": [
+        "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80",
+        "https://images.unsplash.com/photo-1520769669658-f07657f5a307?w=800&q=80",
+        "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800&q=80",
+        "https://images.unsplash.com/photo-1476610182048-b716b8518aae?w=800&q=80",
+        "https://images.unsplash.com/photo-1547236264-76b11fb29f64?w=800&q=80",
+        "https://images.unsplash.com/photo-1551524559-8af4e6624178?w=800&q=80",
+    ],
 };
 
 export default function PackagePage() {
     const { destSlug, pkgSlug } = useParams();
     const navigate = useNavigate();
     const [loaded, setLoaded] = useState(false);
+    const [activeDay, setActiveDay] = useState(0);
 
     const destination = destinations.find((d) => d.slug === destSlug);
     const pkg = destination?.packages.find((p) => p.slug === pkgSlug);
@@ -59,451 +110,249 @@ export default function PackagePage() {
         return () => clearTimeout(t);
     }, [destSlug, pkgSlug]);
 
+    useEffect(() => { setActiveDay(0); }, [destSlug, pkgSlug]);
+
     if (!destination || !pkg) {
         return (
-            <div style={{
-                minHeight: "100vh", display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center", gap: 24,
-                background: COLORS.bg, fontFamily: "'Montserrat', sans-serif",
-            }}>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 48, color: COLORS.dark }}>
-                    Package not found
-                </div>
-                <button onClick={() => navigate("/")} style={{
-                    padding: "12px 36px", borderRadius: 50,
-                    background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
-                    color: "#fff", border: "none", cursor: "pointer",
-                    fontFamily: "'Montserrat', sans-serif", fontSize: 12,
-                    fontWeight: 700, letterSpacing: 3, textTransform: "uppercase",
-                }}>
-                    ← Back Home
-                </button>
+            <div className="pkgE-root pkgE-notfound">
+                <h1>Package not found</h1>
+                <button onClick={() => navigate("/")}>← Back Home</button>
             </div>
         );
     }
 
+    const currentDay = pkg.itinerary?.[activeDay];
+
     return (
         <motion.div
+            className="pkgE-root"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: loaded ? 1 : 0, y: loaded ? 0 : 16 }}
             transition={{ duration: 0.55, ease: "easeOut" }}
-            style={{ background: COLORS.bg, minHeight: "100vh" }}
         >
-            {/* ── HERO ── */}
-            <div style={{
-                position: "relative", overflow: "hidden",
-                height: "75vh", minHeight: 480,
-            }}>
-                <img src={destination.heroImg} alt={destination.name}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                <div style={{
-                    position: "absolute", inset: 0,
-                    background: "linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.15) 100%)",
-                }} />
-                <div style={{
-                    position: "absolute", inset: 0,
-                    background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 40%, rgba(0,0,0,0.5) 100%)",
-                }} />
+            {/* ══ HERO ══ */}
+            <div className="pkgE-hero">
+                <img src={destination.heroImg} alt={destination.name} className="pkgE-hero-img" />
+                <div className="pkgE-hero-overlay" />
+                <div className="pkgE-hero-overlay2" />
 
-                {/* Back button */}
-                <button onClick={() => navigate(`/destination/${destSlug}`)} style={{
-                    position: "absolute", top: 100, left: "5vw", zIndex: 10,
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "10px 24px", borderRadius: 50,
-                    background: "rgba(255,255,255,0.12)", backdropFilter: "blur(12px)",
-                    border: "1px solid rgba(255,255,255,0.2)",
-                    color: "#fff", fontSize: 12, fontWeight: 600,
-                    letterSpacing: 2, textTransform: "uppercase",
-                    fontFamily: "'Montserrat', sans-serif",
-                    cursor: "pointer", transition: "all 0.3s",
-                }}
-                    onMouseEnter={e => { e.currentTarget.style.background = COLORS.primary; e.currentTarget.style.borderColor = COLORS.primary; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; }}
-                >
+                <button className="pkgE-back-btn" onClick={() => navigate(`/destination/${destSlug}`)}>
                     ← Back to {destination.name}
                 </button>
 
-                {/* Hero content */}
-                <div style={{
-                    position: "absolute", bottom: "8%", left: 0, right: 0,
-                    padding: "0 5vw", maxWidth: 800,
-                }}>
-                    <div style={{
-                        display: "flex", alignItems: "center", gap: 10, marginBottom: 14,
-                    }}>
-                        <img src={ICONS.airplane} alt="" style={{ width: 18, height: 18, filter: "brightness(0) invert(1)", opacity: 0.6 }} />
-                        <span style={{
-                            fontSize: 11, letterSpacing: 5, color: COLORS.secondary,
-                            fontFamily: "'Montserrat', sans-serif", fontWeight: 700,
-                            textTransform: "uppercase",
-                        }}>
-                            {destination.name} · {pkg.duration}
-                        </span>
+                <div className="pkgE-hero-content">
+                    <div className="pkgE-hero-tag">
+                        <img src={ICONS.airplane} alt="" style={{ width: 16, height: 16, filter: "brightness(0) invert(1)", opacity: 0.6 }} />
+                        {destination.name} · {pkg.duration}
                     </div>
-                    <h1 style={{
-                        fontFamily: "'Playfair Display', serif",
-                        fontSize: "clamp(32px, 6vw, 64px)", color: "#fff",
-                        fontWeight: 700, lineHeight: 1.1, marginBottom: 20,
-                    }}>
-                        {pkg.title}
-                    </h1>
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        {pkg.destinationsCovered?.map(d => (
-                            <span key={d} style={{
-                                padding: "6px 18px", borderRadius: 50,
-                                background: "rgba(255,255,255,0.1)",
-                                backdropFilter: "blur(8px)",
-                                border: "1px solid rgba(255,255,255,0.18)",
-                                color: "rgba(255,255,255,0.85)",
-                                fontFamily: "'Montserrat', sans-serif",
-                                fontSize: 11, fontWeight: 600, letterSpacing: 1,
-                            }}>
-                                {d}
-                            </span>
-                        ))}
-                    </div>
+                    <h1 className="pkgE-hero-title">{pkg.title}</h1>
+                    {pkg.destinationsCovered && (
+                        <div className="pkgE-chips">
+                            {pkg.destinationsCovered.map(d => (
+                                <span key={d} className="pkgE-chip">{d}</span>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* ── QUICK INFO BAR ── */}
-            <div className="pkg-info-bar" style={{
-                background: COLORS.primary, padding: "0 5vw",
-                display: "flex", alignItems: "stretch",
-                flexWrap: "wrap",
-            }}>
+            {/* ══ FLOATING INFO RIBBON ══ */}
+            <div className="pkgE-ribbon">
                 {[
                     { icon: ICONS.duration, label: "Duration", value: pkg.duration },
                     { icon: ICONS.calendar, label: "Best Time", value: destination.bestTime || "Year Round" },
                     { icon: ICONS.location, label: "Location", value: destination.country },
                 ].map((item, i) => (
-                    <div key={i} style={{
-                        flex: 1, minWidth: 180, padding: "22px 28px",
-                        display: "flex", alignItems: "center", gap: 16,
-                        borderRight: i < 2 ? "1px solid rgba(255,255,255,0.1)" : "none",
-                    }}>
-                        <img src={item.icon} alt="" style={{ width: 28, height: 28, filter: "brightness(0) invert(1)", opacity: 0.7 }} />
+                    <div key={i} className="pkgE-ribbon-item">
+                        <div className="pkgE-ribbon-icon"><img src={item.icon} alt="" /></div>
                         <div>
-                            <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.45)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>{item.label}</div>
-                            <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 14, color: "#fff", fontWeight: 600 }}>{item.value}</div>
+                            <div className="pkgE-ribbon-label">{item.label}</div>
+                            <div className="pkgE-ribbon-value">{item.value}</div>
                         </div>
                     </div>
                 ))}
-                <a href="/#contact" className="pkg-enquire-btn" style={{
-                    padding: "22px 40px", display: "flex", alignItems: "center", gap: 10,
-                    background: COLORS.secondary, color: "#fff",
-                    fontFamily: "'Montserrat', sans-serif", fontSize: 12,
-                    fontWeight: 700, letterSpacing: 3, textTransform: "uppercase",
-                    textDecoration: "none", transition: "background 0.3s",
-                    marginLeft: "auto",
-                }}
-                    onMouseOver={e => e.currentTarget.style.background = COLORS.secondaryLight}
-                    onMouseOut={e => e.currentTarget.style.background = COLORS.secondary}
-                >
-                    <img src={ICONS.suitcase} alt="" style={{ width: 18, height: 18, filter: "brightness(0) invert(1)" }} />
+                <a href="/#contact" className="pkgE-ribbon-cta">
+                    <img src={ICONS.suitcase} alt="" />
                     Enquire Now
                 </a>
             </div>
 
-            {/* ── IMAGE GALLERY STRIP ── */}
-            {images.length > 0 && (
-                <div style={{
-                    padding: "50px 5vw 0", background: COLORS.bg,
-                }}>
-                    <div className="pkg-gallery-strip" style={{
-                        display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16,
-                        maxWidth: 1200, margin: "0 auto",
-                    }}>
-                        {images.slice(0, 3).map((img, i) => (
-                            <div key={i} style={{
-                                borderRadius: 20, overflow: "hidden",
-                                aspectRatio: i === 0 ? "16/10" : "16/10",
-                                boxShadow: "6px 6px 18px rgba(0,0,0,0.07), -3px -3px 10px rgba(255,255,255,0.7)",
-                            }}>
-                                <img src={img} alt={`${destination.name} ${i + 1}`}
-                                    style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }}
-                                    loading="lazy"
-                                    onMouseOver={e => e.target.style.transform = "scale(1.05)"}
-                                    onMouseOut={e => e.target.style.transform = "scale(1)"}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* ── HIGHLIGHTS ── */}
+            {/* ══ SPLIT: Gallery Mosaic + Highlights ══ */}
             {pkg.highlights && pkg.highlights.length > 0 && (
-                <div style={{ padding: "60px 5vw", maxWidth: 1100, margin: "0 auto" }}>
-                    <div style={{ fontSize: 11, letterSpacing: 5, color: COLORS.primary, fontFamily: "'Montserrat', sans-serif", fontWeight: 700, textTransform: "uppercase", marginBottom: 12 }}>
-                        Package Highlights
+                <div className="pkgE-split">
+                    {/* Left: Mosaic Gallery */}
+                    <div className="pkgE-mosaic">
+                        {images.slice(0, 3).map((img, i) => (
+                            <div key={i} className="pkgE-mosaic-img">
+                                <img src={img} alt={`${destination.name} ${i + 1}`} loading="lazy" />
+                            </div>
+                        ))}
                     </div>
-                    <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px, 4vw, 44px)", color: COLORS.dark, fontWeight: 700, marginBottom: 36 }}>
-                        What Makes This Trip Special
-                    </h2>
-                    <div className="pkg-highlights-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                    {/* Right: Highlights */}
+                    <div className="pkgE-highlights-side">
+                        <div className="pkgE-section-label">Package Highlights</div>
+                        <h2 className="pkgE-section-title">What Makes This Trip Special</h2>
                         {pkg.highlights.map((h, i) => (
-                            <div key={i} style={{
-                                display: "flex", gap: 16, alignItems: "flex-start",
-                                padding: "22px 26px", borderRadius: 18,
-                                background: COLORS.bg,
-                                border: "1px solid rgba(0,0,0,0.05)",
-                                boxShadow: "6px 6px 18px rgba(0,0,0,0.04), -3px -3px 10px rgba(255,255,255,0.6)",
-                                transition: "transform 0.3s, box-shadow 0.3s",
-                            }}
-                                onMouseOver={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "8px 8px 24px rgba(30,58,138,0.08), -3px -3px 10px rgba(255,255,255,0.8)"; }}
-                                onMouseOut={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "6px 6px 18px rgba(0,0,0,0.04), -3px -3px 10px rgba(255,255,255,0.6)"; }}
-                            >
-                                <img src={ICONS.highlight} alt="" style={{ width: 28, height: 28, flexShrink: 0, marginTop: 2 }} />
-                                <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 14, color: COLORS.dark, lineHeight: 1.6, margin: 0 }}>
-                                    {h}
-                                </p>
+                            <div key={i} className="pkgE-highlight-item">
+                                <div className="pkgE-highlight-num">{String(i + 1).padStart(2, "0")}</div>
+                                <p className="pkgE-highlight-text">{h}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* ── ITINERARY ── */}
+            {/* ══ TAB-BASED ITINERARY ══ */}
             {pkg.itinerary && pkg.itinerary.length > 0 && (
-                <div style={{ padding: "60px 5vw", background: COLORS.bgAlt }}>
-                    <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-                        <div style={{ fontSize: 11, letterSpacing: 5, color: COLORS.primary, fontFamily: "'Montserrat', sans-serif", fontWeight: 700, textTransform: "uppercase", marginBottom: 12 }}>
-                            Day by Day
-                        </div>
-                        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px, 4vw, 44px)", color: COLORS.dark, fontWeight: 700, marginBottom: 44 }}>
-                            Your Itinerary
-                        </h2>
+                <div className="pkgE-itin-section">
+                    <div className="pkgE-itin-wrap">
+                        <div className="pkgE-section-label">Day by Day</div>
+                        <h2 className="pkgE-section-title">Your Itinerary</h2>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                        {/* Day tabs */}
+                        <div className="pkgE-itin-tabs">
                             {pkg.itinerary.map((day, i) => (
-                                <div key={i} className="pkg-itinerary-row" style={{ display: "flex", gap: 28, position: "relative" }}>
-                                    {/* Timeline */}
-                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, width: 50 }}>
-                                        <div style={{
-                                            width: 44, height: 44, borderRadius: "50%",
-                                            background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
-                                            display: "flex", alignItems: "center", justifyContent: "center",
-                                            color: "#fff", fontFamily: "'Montserrat', sans-serif",
-                                            fontSize: 14, fontWeight: 700, flexShrink: 0,
-                                            boxShadow: "0 4px 16px rgba(30,58,138,0.25)",
-                                        }}>
-                                            {day.day}
-                                        </div>
-                                        {i < pkg.itinerary.length - 1 && (
-                                            <div style={{
-                                                width: 2, flex: 1, minHeight: 20,
-                                                background: `linear-gradient(to bottom, ${COLORS.primaryLight}, ${COLORS.bgAlt2})`,
-                                            }} />
-                                        )}
-                                    </div>
-
-                                    {/* Content card */}
-                                    <div style={{
-                                        flex: 1, marginBottom: 24,
-                                        background: COLORS.bg, borderRadius: 22,
-                                        padding: "28px 30px",
-                                        boxShadow: "6px 6px 18px rgba(0,0,0,0.04), -3px -3px 10px rgba(255,255,255,0.7)",
-                                        border: "1px solid rgba(0,0,0,0.04)",
-                                        display: "flex", flexDirection: "column", gap: 0,
-                                    }}>
-                                        {/* Day image — show for days with activities */}
-                                        {images[i] && day.activities.length > 0 && (
-                                            <div style={{
-                                                borderRadius: 14, overflow: "hidden",
-                                                marginBottom: 18, aspectRatio: "21/9",
-                                            }}>
-                                                <img src={images[i]} alt={day.title}
-                                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                                    loading="lazy"
-                                                />
-                                            </div>
-                                        )}
-                                        <div style={{
-                                            fontFamily: "'Montserrat', sans-serif", fontSize: 10,
-                                            color: COLORS.secondary, fontWeight: 700,
-                                            letterSpacing: 3, textTransform: "uppercase", marginBottom: 8,
-                                        }}>
-                                            Day {day.day}
-                                        </div>
-                                        <h3 style={{
-                                            fontFamily: "'Playfair Display', serif", fontSize: 22,
-                                            color: COLORS.dark, fontWeight: 700, marginBottom: 12,
-                                        }}>
-                                            {day.title}
-                                        </h3>
-                                        <p style={{
-                                            fontFamily: "'Montserrat', sans-serif", fontSize: 14,
-                                            color: COLORS.muted, lineHeight: 1.7, marginBottom: day.activities.length > 0 ? 18 : 0,
-                                        }}>
-                                            {day.description}
-                                        </p>
-                                        {day.activities.length > 0 && (
-                                            <div style={{
-                                                display: "flex", flexDirection: "column", gap: 10,
-                                                padding: "16px 20px", borderRadius: 14,
-                                                background: COLORS.bgAlt,
-                                            }}>
-                                                <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 10, color: COLORS.primary, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Activities</div>
-                                                {day.activities.map((a, j) => (
-                                                    <div key={j} style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                                                        <div style={{
-                                                            width: 7, height: 7, borderRadius: "50%",
-                                                            background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryLight})`,
-                                                            flexShrink: 0,
-                                                        }} />
-                                                        <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 13, color: COLORS.dark, fontWeight: 500 }}>
-                                                            {a}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                <button
+                                    key={i}
+                                    className={`pkgE-itin-tab ${i === activeDay ? "active" : ""}`}
+                                    onClick={() => setActiveDay(i)}
+                                >
+                                    Day {day.day}
+                                </button>
                             ))}
                         </div>
+
+                        {/* Active day content */}
+                        {currentDay && (
+                            <div className={`pkgE-itin-panel ${!images[activeDay] || currentDay.activities.length === 0 ? "no-image" : ""}`} key={activeDay}>
+                                {/* Image */}
+                                {images[activeDay] && currentDay.activities.length > 0 && (
+                                    <div className="pkgE-itin-img-box">
+                                        <img src={images[activeDay]} alt={currentDay.title} loading="lazy" />
+                                    </div>
+                                )}
+                                {/* Content */}
+                                <div className="pkgE-itin-content">
+                                    <div className="pkgE-itin-day-badge">Day {currentDay.day}</div>
+                                    <h3 className="pkgE-itin-title">{currentDay.title}</h3>
+                                    <p className="pkgE-itin-desc">{currentDay.description}</p>
+                                    {currentDay.activities.length > 0 && (
+                                        <div className="pkgE-itin-acts">
+                                            <div className="pkgE-itin-acts-title">Activities</div>
+                                            {currentDay.activities.map((a, j) => (
+                                                <div key={j} className="pkgE-itin-act-row">
+                                                    <div className="pkgE-itin-act-dot" />
+                                                    <span className="pkgE-itin-act-text">{a}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
 
-            {/* ── SECOND IMAGE ROW ── */}
+            {/* ══ GALLERY STRIP (remaining images) ══ */}
             {images.length > 3 && (
-                <div style={{ padding: "50px 5vw", background: COLORS.bg }}>
-                    <div className="pkg-gallery-strip" style={{
-                        display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16,
-                        maxWidth: 1200, margin: "0 auto",
-                    }}>
+                <div className="pkgE-gallery-section">
+                    <div className="pkgE-gallery-grid">
                         {images.slice(3, 6).map((img, i) => (
-                            <div key={i} style={{
-                                borderRadius: 20, overflow: "hidden",
-                                aspectRatio: "16/10",
-                                boxShadow: "6px 6px 18px rgba(0,0,0,0.07), -3px -3px 10px rgba(255,255,255,0.7)",
-                            }}>
-                                <img src={img} alt={`${destination.name} ${i + 4}`}
-                                    style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }}
-                                    loading="lazy"
-                                    onMouseOver={e => e.target.style.transform = "scale(1.05)"}
-                                    onMouseOut={e => e.target.style.transform = "scale(1)"}
-                                />
+                            <div key={i} className="pkgE-gallery-card">
+                                <img src={img} alt={`${destination.name} ${i + 4}`} loading="lazy" />
                             </div>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* ── STAY DETAILS ── */}
-            {pkg.stay && (
-                <div style={{ padding: "60px 5vw", background: COLORS.bgAlt }}>
-                    <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-                        <div style={{ fontSize: 11, letterSpacing: 5, color: COLORS.primary, fontFamily: "'Montserrat', sans-serif", fontWeight: 700, textTransform: "uppercase", marginBottom: 12 }}>
-                            Your Accommodation
-                        </div>
-                        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px, 4vw, 44px)", color: COLORS.dark, fontWeight: 700, marginBottom: 32 }}>
-                            Stay Details
-                        </h2>
-                        <div style={{
-                            background: COLORS.bg, borderRadius: 24, overflow: "hidden",
-                            border: "1px solid rgba(0,0,0,0.04)",
-                            boxShadow: "8px 8px 24px rgba(0,0,0,0.06), -4px -4px 14px rgba(255,255,255,0.7)",
-                        }}>
-                            {/* Hotel header with accent strip */}
-                            <div style={{
-                                background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
-                                padding: "24px 32px", display: "flex", alignItems: "center", gap: 16,
-                            }}>
-                                <img src={ICONS.hotel} alt="" style={{ width: 32, height: 32, filter: "brightness(0) invert(1)" }} />
-                                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: "#fff", fontWeight: 700 }}>
-                                    {pkg.stay.hotel}
-                                </h3>
+            {/* ══ STAY DETAILS ══ */}
+            {(pkg.stays || pkg.stay) && (() => {
+                const stayList = pkg.stays || (pkg.stay ? [pkg.stay] : []);
+                return (
+                    <div className="pkgE-stays-section">
+                        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+                            <div className="pkgE-section-label">
+                                Your Accommodation{stayList.length > 1 ? "s" : ""}
                             </div>
-                            {/* Details grid */}
-                            <div className="pkg-stay-grid" style={{
-                                display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-                                padding: "28px 32px", gap: 20,
-                            }}>
-                                {[
-                                    { icon: ICONS.location, label: "Location", value: pkg.stay.location },
-                                    { icon: ICONS.duration, label: "Duration", value: pkg.stay.nights },
-                                    { icon: ICONS.checkIn, label: "Check-In", value: pkg.stay.checkIn },
-                                    { icon: ICONS.checkOut, label: "Check-Out", value: pkg.stay.checkOut },
-                                ].map(item => (
-                                    <div key={item.label} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                                        <img src={item.icon} alt="" style={{ width: 22, height: 22, opacity: 0.6, marginTop: 2 }} />
-                                        <div>
-                                            <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 10, color: COLORS.muted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>{item.label}</div>
-                                            <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 15, color: COLORS.dark, fontWeight: 600 }}>{item.value}</div>
+                            <h2 className="pkgE-section-title">Stay Details</h2>
+                            <div className="pkgE-stays-wrap">
+                                {stayList.map((s, si) => (
+                                    <div key={si} className="pkgE-stay-card">
+                                        <div className="pkgE-stay-header">
+                                            <img src={ICONS.hotel} alt="" />
+                                            <div>
+                                                <div className="pkgE-stay-name">{s.hotel}</div>
+                                                {stayList.length > 1 && (
+                                                    <div className="pkgE-stay-count">Stay {si + 1} of {stayList.length}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="pkgE-stay-grid">
+                                            {[
+                                                { icon: ICONS.location, label: "Location", value: s.location },
+                                                { icon: ICONS.duration, label: "Duration", value: s.nights },
+                                                { icon: ICONS.checkIn, label: "Check-In", value: s.checkIn },
+                                                { icon: ICONS.checkOut, label: "Check-Out", value: s.checkOut },
+                                            ].map(item => (
+                                                <div key={item.label} className="pkgE-stay-detail">
+                                                    <img src={item.icon} alt="" />
+                                                    <div>
+                                                        <div className="pkgE-stay-detail-label">{item.label}</div>
+                                                        <div className="pkgE-stay-detail-value">{item.value}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="pkgE-stay-meals">
+                                            <img src={ICONS.meals} alt="" />
+                                            <span>{s.meals}</span>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div style={{
-                                padding: "0 32px 24px",
-                            }}>
-                                <div style={{
-                                    padding: "12px 20px", borderRadius: 12,
-                                    background: `linear-gradient(135deg, rgba(30,58,138,0.06), rgba(59,130,246,0.06))`,
-                                    display: "inline-flex", alignItems: "center", gap: 10,
-                                }}>
-                                    <img src={ICONS.meals} alt="" style={{ width: 20, height: 20, opacity: 0.7 }} />
-                                    <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 13, color: COLORS.primary, fontWeight: 600 }}>{pkg.stay.meals}</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
-            {/* ── INCLUSIONS & EXCLUSIONS ── */}
-            <div style={{ padding: "60px 5vw", background: COLORS.bg }}>
-                <div className="pkg-inc-exc-grid" style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
-                    {/* Inclusions */}
+            {/* ══ INCLUSIONS & EXCLUSIONS ══ */}
+            <div className="pkgE-incexc-section">
+                <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+                    <div style={{ textAlign: "center", marginBottom: 40 }}>
+                        <div className="pkgE-section-label" style={{ textAlign: "center" }}>What's Covered</div>
+                        <h2 className="pkgE-section-title" style={{ textAlign: "center" }}>Inclusions & Exclusions</h2>
+                    </div>
+                </div>
+                <div className="pkgE-incexc-grid">
                     {pkg.inclusions && (
-                        <div style={{
-                            background: COLORS.bgAlt, borderRadius: 24, overflow: "hidden",
-                            border: "1px solid rgba(0,0,0,0.04)",
-                            boxShadow: "6px 6px 18px rgba(0,0,0,0.04), -3px -3px 10px rgba(255,255,255,0.6)",
-                        }}>
-                            <div style={{
-                                background: "linear-gradient(135deg, #16a34a, #22c55e)",
-                                padding: "18px 28px", display: "flex", alignItems: "center", gap: 12,
-                            }}>
-                                <img src={ICONS.included} alt="" style={{ width: 22, height: 22, filter: "brightness(0) invert(1)" }} />
-                                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, color: "#fff", fontWeight: 700 }}>
-                                    What's Included
-                                </h3>
+                        <div className="pkgE-incexc-card">
+                            <div className="pkgE-inc-head">
+                                <img src={ICONS.included} alt="" className="pkgE-incexc-head-icon" />
+                                <h3 className="pkgE-incexc-head-title">What's Included</h3>
                             </div>
-                            <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+                            <div className="pkgE-incexc-list">
                                 {pkg.inclusions.map((item, i) => (
-                                    <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                                        <img src={ICONS.included} alt="" style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
-                                        <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 14, color: COLORS.dark, lineHeight: 1.5 }}>{item}</span>
+                                    <div key={i} className="pkgE-incexc-row">
+                                        <img src={ICONS.included} alt="" />
+                                        <span className="pkgE-inc-text">{item}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
-
-                    {/* Exclusions */}
                     {pkg.exclusions && (
-                        <div style={{
-                            background: COLORS.bgAlt, borderRadius: 24, overflow: "hidden",
-                            border: "1px solid rgba(0,0,0,0.04)",
-                            boxShadow: "6px 6px 18px rgba(0,0,0,0.04), -3px -3px 10px rgba(255,255,255,0.6)",
-                        }}>
-                            <div style={{
-                                background: "linear-gradient(135deg, #dc2626, #ef4444)",
-                                padding: "18px 28px", display: "flex", alignItems: "center", gap: 12,
-                            }}>
-                                <img src={ICONS.excluded} alt="" style={{ width: 22, height: 22, filter: "brightness(0) invert(1)" }} />
-                                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, color: "#fff", fontWeight: 700 }}>
-                                    What's Not Included
-                                </h3>
+                        <div className="pkgE-incexc-card">
+                            <div className="pkgE-exc-head">
+                                <img src={ICONS.excluded} alt="" className="pkgE-incexc-head-icon" />
+                                <h3 className="pkgE-incexc-head-title">What's Not Included</h3>
                             </div>
-                            <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+                            <div className="pkgE-incexc-list">
                                 {pkg.exclusions.map((item, i) => (
-                                    <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                                        <img src={ICONS.excluded} alt="" style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
-                                        <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 14, color: COLORS.muted, lineHeight: 1.5 }}>{item}</span>
+                                    <div key={i} className="pkgE-incexc-row">
+                                        <img src={ICONS.excluded} alt="" />
+                                        <span className="pkgE-exc-text">{item}</span>
                                     </div>
                                 ))}
                             </div>
@@ -512,85 +361,18 @@ export default function PackagePage() {
                 </div>
             </div>
 
-            {/* ── BOTTOM CTA ── */}
-            <div style={{
-                textAlign: "center", padding: "70px 5vw",
-                background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
-                position: "relative", overflow: "hidden",
-            }}>
-                {/* Decorative pattern */}
-                <div style={{
-                    position: "absolute", inset: 0, opacity: 0.05,
-                    backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
-                    backgroundSize: "30px 30px",
-                }} />
-                <div style={{ position: "relative", zIndex: 1 }}>
-                    <h2 style={{
-                        fontFamily: "'Playfair Display', serif",
-                        fontSize: "clamp(28px, 4vw, 48px)", color: "#fff",
-                        fontWeight: 700, marginBottom: 16,
-                    }}>
-                        Ready to Explore {destination.name}?
-                    </h2>
-                    <p style={{
-                        fontFamily: "'Montserrat', sans-serif", fontSize: 15,
-                        color: "rgba(255,255,255,0.7)", marginBottom: 36,
-                        maxWidth: 500, margin: "0 auto 36px",
-                    }}>
-                        Get in touch with our travel experts and we'll plan your perfect trip.
-                    </p>
-                    <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-                        <a href="/#contact" style={{
-                            padding: "16px 44px", borderRadius: 50,
-                            background: COLORS.secondary, color: "#fff",
-                            fontFamily: "'Montserrat', sans-serif", fontSize: 12,
-                            fontWeight: 700, letterSpacing: 3, textTransform: "uppercase",
-                            textDecoration: "none",
-                            boxShadow: "0 6px 24px rgba(249,115,22,0.4)",
-                            transition: "transform 0.2s, box-shadow 0.2s",
-                        }}
-                            onMouseOver={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 10px 32px rgba(249,115,22,0.5)"; }}
-                            onMouseOut={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 6px 24px rgba(249,115,22,0.4)"; }}
-                        >
-                            Contact Us
-                        </a>
-                        <button onClick={() => navigate(`/destination/${destSlug}`)} style={{
-                            padding: "16px 44px", borderRadius: 50,
-                            background: "transparent", color: "#fff",
-                            border: "1px solid rgba(255,255,255,0.35)",
-                            cursor: "pointer",
-                            fontFamily: "'Montserrat', sans-serif", fontSize: 12,
-                            fontWeight: 700, letterSpacing: 3, textTransform: "uppercase",
-                            transition: "all 0.2s",
-                        }}
-                            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.15)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; }}
-                        >
-                            ← All Packages
-                        </button>
-                    </div>
+            {/* ══ BOTTOM CTA ══ */}
+            <div className="pkgE-cta">
+                <div className="pkgE-cta-pattern" />
+                <h2>Ready to Explore {destination.name}?</h2>
+                <p>Get in touch with our travel experts and we'll plan your perfect trip.</p>
+                <div className="pkgE-cta-btns">
+                    <a href="/#contact" className="pkgE-cta-primary">Contact Us</a>
+                    <button onClick={() => navigate(`/destination/${destSlug}`)} className="pkgE-cta-secondary">
+                        ← All Packages
+                    </button>
                 </div>
             </div>
-
-            <style>{`
-                @media(max-width: 768px) {
-                    .pkg-info-bar { flex-direction: column !important; }
-                    .pkg-info-bar > div { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
-                    .pkg-info-bar > div:last-child { border-bottom: none !important; }
-                    .pkg-enquire-btn { width: 100% !important; justify-content: center !important; margin-left: 0 !important; }
-                    .pkg-highlights-grid { grid-template-columns: 1fr !important; }
-                    .pkg-stay-grid { grid-template-columns: repeat(2, 1fr) !important; }
-                    .pkg-inc-exc-grid { grid-template-columns: 1fr !important; }
-                    .pkg-gallery-strip { grid-template-columns: 1fr !important; }
-                    .pkg-itinerary-row { gap: 16px !important; }
-                }
-                @media(max-width: 480px) {
-                    .pkg-stay-grid { grid-template-columns: 1fr !important; }
-                    .pkg-itinerary-row { flex-direction: column !important; gap: 0 !important; }
-                    .pkg-itinerary-row > div:first-child { flex-direction: row !important; width: auto !important; gap: 12px !important; margin-bottom: 10px !important; }
-                    .pkg-itinerary-row > div:first-child > div:last-child { display: none !important; }
-                }
-            `}</style>
         </motion.div>
     );
 }
