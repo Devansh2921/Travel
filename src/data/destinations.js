@@ -1,3 +1,5 @@
+import stockImages from "./stockImages";
+
 const destinations = [
     {
         name: "Almaty",
@@ -5930,5 +5932,14 @@ const destinations = [
         ],
     },
 ];
+
+// Apply stock photos to each destination that has them
+destinations.forEach(dest => {
+    const imgs = stockImages[dest.slug];
+    if (imgs) {
+        if (imgs.hero) dest.heroImg = imgs.hero;
+        if (imgs.card) dest.cardImg = imgs.card;
+    }
+});
 
 export default destinations;

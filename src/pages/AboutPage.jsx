@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import stockImages from "../data/stockImages";
 
 const COLORS = {
     primary: "#1E3A8A",
@@ -36,19 +37,19 @@ const useScrollAnimation = () => {
 };
 
 const stats = [
-    { val: "8+", label: "Years of Experience" },
-    { val: "50K+", label: "Happy Travellers" },
-    { val: "120+", label: "Destinations" },
-    { val: "4.9★", label: "Average Rating" },
+    { val: "3+", label: "Years Experience", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+    { val: "500+", label: "Happy Travellers", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+    { val: "80+", label: "Destinations", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> },
+    { val: "4.9★", label: "Average Rating", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
 ];
 
 const values = [
-    { icon: "🧭", title: "Personalised Planning", desc: "Every trip is built around you — your pace, your interests, your dream. No generic packages, ever." },
-    { icon: "💎", title: "Premium Quality", desc: "We partner only with the finest hotels, guides, and experiences — curated through rigorous vetting." },
-    { icon: "🌿", title: "Responsible Travel", desc: "We're committed to sustainable, eco-conscious tourism that preserves cultures and natural beauty." },
-    { icon: "📞", title: "24/7 Support", desc: "From the moment you book to the moment you return, our team is always just a call away." },
-    { icon: "🗺️", title: "Expert Local Knowledge", desc: "Our on-ground partners in every destination ensure you experience the authentic, not the touristy." },
-    { icon: "✈️", title: "Seamless Experience", desc: "Flights, hotels, transfers, activities — we coordinate every detail so you just enjoy the journey." },
+    { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>, title: "Personalised Planning", desc: "Every trip is built around you — your pace, your interests, your dream. No generic packages, ever." },
+    { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, title: "Premium Quality", desc: "We partner only with the finest hotels, guides, and experiences — curated through rigorous vetting." },
+    { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c4-4 8-7.5 8-12a8 8 0 1 0-16 0c0 4.5 4 8 8 12z"/><path d="M7 14c3.22-1 5.78-1 9 0"/><path d="M12 10V6"/><path d="M9.5 8.5L12 6l2.5 2.5"/></svg>, title: "Responsible Travel", desc: "We're committed to sustainable, eco-conscious tourism that preserves cultures and natural beauty." },
+    { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>, title: "24/7 Support", desc: "From the moment you book to the moment you return, our team is always just a call away." },
+    { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>, title: "Expert Local Knowledge", desc: "Our on-ground partners in every destination ensure you experience the authentic, not the touristy." },
+    { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>, title: "Seamless Experience", desc: "Flights, hotels, transfers, activities — we coordinate every detail so you just enjoy the journey." },
 ];
 
 const team = [
@@ -59,12 +60,12 @@ const team = [
 ];
 
 const aboutDestinations = [
-    { name: "Bali", img: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80" },
-    { name: "Santorini", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&q=80" },
-    { name: "Kyoto", img: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&q=80" },
-    { name: "Dubai", img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80" },
-    { name: "Switzerland", img: "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=600&q=80" },
-    { name: "Maldives", img: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=600&q=80" },
+    { name: "Bali", img: stockImages.bali.card },
+    { name: "Santorini", img: stockImages.greece.card },
+    { name: "Japan", img: stockImages.japan.card },
+    { name: "Dubai", img: stockImages.dubai.card },
+    { name: "Singapore", img: stockImages.singapore.card },
+    { name: "Mauritius", img: stockImages.mauritius.card },
 ];
 
 export default function AboutPage() {
@@ -80,7 +81,7 @@ export default function AboutPage() {
             {/* ── HERO ── */}
             <section style={{ position: "relative", height: "70vh", minHeight: 520, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <img
-                    src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1600&q=80"
+                    src={stockImages["northern-lights"].hero}
                     alt="About hero"
                     style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                 />
@@ -94,7 +95,7 @@ export default function AboutPage() {
                         <em style={{ color: "#93c5fd", fontStyle: "italic" }}>We Craft Memories.</em>
                     </h1>
                     <p style={{ fontSize: "clamp(14px, 1.6vw, 17px)", color: "rgba(255,255,255,0.8)", maxWidth: 560, margin: "0 auto", lineHeight: 1.8 }}>
-                        Born from a love of discovery, WE PLAN TRIPS has been turning travel dreams into extraordinary reality since 2018.
+                        Born from a love of discovery, WE PLAN TRIPS has been turning travel dreams into extraordinary reality since 2023.
                     </p>
                 </div>
                 <div style={{ position: "absolute", bottom: -1, left: 0, right: 0 }}>
@@ -109,6 +110,9 @@ export default function AboutPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 24, maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
                     {stats.map((s, i) => (
                         <div key={s.label} style={{ opacity: statsVisible ? 1 : 0, transform: statsVisible ? "translateY(0)" : "translateY(20px)", transition: `all 0.6s ${i * 0.1}s` }}>
+                            <div style={{ width: 48, height: 48, borderRadius: 14, margin: "0 auto 12px", background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                {s.icon}
+                            </div>
                             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(40px, 5vw, 58px)", color: "#fff", fontWeight: 700, lineHeight: 1 }}>{s.val}</div>
                             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", letterSpacing: 2, textTransform: "uppercase", marginTop: 8 }}>{s.label}</div>
                         </div>
@@ -125,10 +129,10 @@ export default function AboutPage() {
                             A Team Obsessed<br />with Your Journey
                         </h2>
                         <p style={{ color: COLORS.muted, fontSize: 15, lineHeight: 1.9, marginBottom: 20 }}>
-                            Founded in 2018, WE PLAN TRIPS started as a small team of passionate travellers who believed that the best trips aren't found in brochures — they're built conversation by conversation, detail by detail.
+                            Founded in 2023, WE PLAN TRIPS started as a small team of passionate travellers who believed that the best trips aren't found in brochures — they're built conversation by conversation, detail by detail.
                         </p>
                         <p style={{ color: COLORS.muted, fontSize: 15, lineHeight: 1.9, marginBottom: 32 }}>
-                            Today, we've helped over 50,000 travellers experience the world in a way that's deeply personal, seamlessly organised, and utterly unforgettable. From private villas in Bali to the Northern Lights in Lapland — every trip we craft carries our promise: <em style={{ color: COLORS.primaryLight, fontWeight: 600 }}>you'll want to come back for more.</em>
+                            Today, we've helped over 500 travellers experience the world in a way that's deeply personal, seamlessly organised, and utterly unforgettable. From private villas in Bali to the Northern Lights in Lapland — every trip we craft carries our promise: <em style={{ color: COLORS.primaryLight, fontWeight: 600 }}>you'll want to come back for more.</em>
                         </p>
                         <a href="/#packages" style={{
                             display: "inline-block",
@@ -146,7 +150,7 @@ export default function AboutPage() {
                     </div>
                     <div style={{ position: "relative" }}>
                         <div style={{ borderRadius: 24, overflow: "hidden", aspectRatio: "4/5", boxShadow: "12px 12px 30px rgba(0,0,0,0.1), -6px -6px 16px rgba(255,255,255,0.7)" }}>
-                            <img src="https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=800&q=80" alt="Travellers" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <img src={stockImages.bali.gallery[2]} alt="Travellers" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                         <div style={{
                             position: "absolute", bottom: -24, right: -24,
@@ -154,7 +158,7 @@ export default function AboutPage() {
                             borderRadius: 20, padding: "22px 28px",
                             boxShadow: "0 12px 40px rgba(30,58,138,0.35)", textAlign: "center",
                         }}>
-                            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 42, fontWeight: 700, color: "#fff", lineHeight: 1 }}>8+</div>
+                            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 42, fontWeight: 700, color: "#fff", lineHeight: 1 }}>3+</div>
                             <div style={{ fontSize: 10, color: "rgba(255,255,255,0.8)", letterSpacing: 2, textTransform: "uppercase", marginTop: 4 }}>Years of Excellence</div>
                         </div>
                         <div style={{ position: "absolute", top: -20, left: -20, width: 100, height: 100, border: `2px solid ${COLORS.bgAlt2}`, borderRadius: "50%", opacity: 0.5 }} />
@@ -180,7 +184,7 @@ export default function AboutPage() {
                             }}
                             onMouseOver={e => { Object.assign(e.currentTarget.style, CLAY.cardHover); e.currentTarget.style.transform = "translateY(-4px)"; }}
                             onMouseOut={e => { e.currentTarget.style.boxShadow = CLAY.card.boxShadow; e.currentTarget.style.border = CLAY.card.border; e.currentTarget.style.transform = "translateY(0)"; }}>
-                            <div style={{ fontSize: 46, marginBottom: 18 }}>{v.icon}</div>
+                            <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 16, background: `linear-gradient(135deg, ${COLORS.primary}15, ${COLORS.primaryLight}15)` }}>{v.icon}</div>
                             <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: COLORS.dark, fontWeight: 600, marginBottom: 10 }}>{v.title}</h3>
                             <p style={{ fontSize: 13, color: COLORS.muted, lineHeight: 1.8 }}>{v.desc}</p>
                         </div>

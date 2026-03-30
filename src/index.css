@@ -14,15 +14,56 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
   background: #ffffff;
   color: #1a1a2e;
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+}
+
+/* ─── SMART SCROLLBAR ──────────────────────────────────── */
+/* Subtle by default, more visible on interaction */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(30, 58, 138, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(30, 58, 138, 0.4);
+}
+
+/* Show scrollbar more prominently when .scrollbar-visible */
+html.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(30, 58, 138, 0.4);
+}
+
+/* Firefox scrollbar */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(30, 58, 138, 0.15) transparent;
+}
+html.scrollbar-visible {
+  scrollbar-color: rgba(30, 58, 138, 0.4) transparent;
+}
+
+::selection {
+  background: rgba(30, 58, 138, 0.2);
 }

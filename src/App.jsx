@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import emailjs from "@emailjs/browser";
 import logo from "./assets/logo.png";
-import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
+import whiteLogo from "./assets/White logo.png";
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
 import DestinationCarousel from "./components/DestinationCarousel";
+import TravelGalleryBars from "./components/TravelGalleryBars";
 import DestinationPage from "./pages/DestinationPage";
 import PackagePage from "./pages/PackagePage";
 import AboutPage from "./pages/AboutPage";
+import FilteredPackagesPage from "./pages/FilteredPackagesPage";
 import destinations from "./data/destinations";
+import stockImages from "./data/stockImages";
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 
@@ -46,11 +50,11 @@ const testimonials = [
 ];
 
 const heroDestinations = [
-  { name: "Bali", country: "Indonesia", tagline: "Island of the Gods", img: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&q=90", slug: "bali" },
-  { name: "Dubai", country: "UAE", tagline: "City of Gold & Grandeur", img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1600&q=90", slug: "dubai" },
-  { name: "Northern Lights", country: "Scandinavia", tagline: "Nature's Greatest Light Show", img: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=90", slug: "northern-lights" },
-  { name: "Japan", country: "Japan", tagline: "Where Tradition Meets Tomorrow", img: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=90", slug: "japan" },
-  { name: "Greece", country: "Greece", tagline: "Sunsets Over the Aegean", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=1600&q=90", slug: "greece" },
+  { name: "Bali", country: "Indonesia", tagline: "Island of the Gods", img: stockImages.bali.hero, slug: "bali" },
+  { name: "Dubai", country: "UAE", tagline: "City of Gold & Grandeur", img: stockImages.dubai.hero, slug: "dubai" },
+  { name: "Northern Lights", country: "Scandinavia", tagline: "Nature's Greatest Light Show", img: stockImages["northern-lights"].hero, slug: "northern-lights" },
+  { name: "Japan", country: "Japan", tagline: "Where Tradition Meets Tomorrow", img: stockImages.japan.hero, slug: "japan" },
+  { name: "Greece", country: "Greece", tagline: "Sunsets Over the Aegean", img: stockImages.greece.hero, slug: "greece" },
 ];
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -68,7 +72,9 @@ const useScrollAnimation = () => {
 
 // ─── NAVBAR ──────────────────────────────────────────────────────────────────
 
-function NavbarSearch({ scrolled }) {
+const NAV_HEIGHT = 72;
+
+function NavbarSearch({ navSolid }) {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -96,13 +102,13 @@ function NavbarSearch({ scrolled }) {
     <div className="navbar-search" style={{ position: "relative", flex: "1 1 0", maxWidth: 420, margin: "0 12px", minWidth: 0 }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 8,
-        background: scrolled ? COLORS.bgAlt : "rgba(255,255,255,0.15)",
+        background: navSolid ? COLORS.bgAlt : "rgba(255,255,255,0.15)",
         borderRadius: 50, padding: "6px 6px 6px 18px",
-        border: scrolled ? `1px solid ${COLORS.bgAlt2}` : "1px solid rgba(255,255,255,0.2)",
-        backdropFilter: scrolled ? "none" : "blur(12px)",
+        border: navSolid ? `1px solid ${COLORS.bgAlt2}` : "1px solid rgba(255,255,255,0.2)",
+        backdropFilter: navSolid ? "none" : "blur(12px)",
         transition: "all 0.4s",
       }}>
-        <span style={{ fontSize: 16, color: scrolled ? COLORS.muted : "rgba(255,255,255,0.7)", transition: "color 0.3s" }}>🔍</span>
+        <span style={{ fontSize: 16, color: navSolid ? COLORS.muted : "rgba(255,255,255,0.7)", transition: "color 0.3s" }}>🔍</span>
         <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
           <input
             value={query}
@@ -112,7 +118,7 @@ function NavbarSearch({ scrolled }) {
             style={{
               width: "100%", border: "none", outline: "none", background: "transparent",
               fontFamily: "'Montserrat', sans-serif", fontSize: 13,
-              color: scrolled ? COLORS.dark : "#fff",
+              color: navSolid ? COLORS.dark : "#fff",
               padding: "8px 0", transition: "color 0.3s",
             }}
           />
@@ -120,7 +126,7 @@ function NavbarSearch({ scrolled }) {
             <span className="nav-search-placeholder" style={{
               position: "absolute", left: 0, top: "50%",
               fontFamily: "'Montserrat', sans-serif", fontSize: 13,
-              color: scrolled ? COLORS.muted : "rgba(255,255,255,0.55)",
+              color: navSolid ? COLORS.muted : "rgba(255,255,255,0.55)",
               pointerEvents: "none", transition: "color 0.3s, opacity 0.3s, transform 0.3s",
               opacity: placeholderFade ? 1 : 0,
               transform: placeholderFade ? "translateY(-50%)" : "translateY(-70%)",
@@ -166,78 +172,321 @@ function NavbarSearch({ scrolled }) {
   );
 }
 
+// ─── NAVBAR ──────────────────────────────────────────────────────────────────
+
+const priceRanges = [
+  { label: "Packages Under ₹50,000", path: "/packages/under-50000" },
+  { label: "Packages Under ₹1,00,000", path: "/packages/under-100000" },
+  { label: "Packages Under ₹1,50,000", path: "/packages/under-150000" },
+  { label: "Packages Under ₹2,50,000", path: "/packages/under-250000" },
+];
+
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [scrollY, setScrollY] = useState(typeof window !== "undefined" ? window.scrollY : 0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [destOpen, setDestOpen] = useState(false);
+  const [pkgOpen, setPkgOpen] = useState(false);
+  const [mobileDestOpen, setMobileDestOpen] = useState(false);
+  const [mobilePkgOpen, setMobilePkgOpen] = useState(false);
+  const destTimeout = useRef(null);
+  const pkgTimeout = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const pathname = location.pathname;
+  const isHeroRoute =
+    pathname === "/" ||
+    pathname === "/about" ||
+    pathname.startsWith("/destination/");
+  const navSolid = scrolled || !isHeroRoute;
+  const showWhiteLogo = scrollY === 0 && isHeroRoute;
+
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+      setScrollY(window.scrollY);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  const links = [
-    { name: "About Us", href: "/about" },
-    { name: "Holiday Packages", href: "/#packages" },
-    { name: "Contact", href: "/#contact" },
-  ];
+
+  useEffect(() => {
+    setScrollY(window.scrollY);
+    setScrolled(window.scrollY > 40);
+  }, [pathname]);
+
+  const baseLinkColor = navSolid ? COLORS.primary : "rgba(255,255,255,0.9)";
+
   return (
     <nav style={{
       fontFamily: "'Montserrat', sans-serif",
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
       transition: "all 0.4s",
-      background: scrolled ? "rgba(255,255,255,0.95)" : "transparent",
-      backdropFilter: scrolled ? "blur(16px)" : "none",
-      borderBottom: scrolled ? "1px solid rgba(30,58,138,0.1)" : "none",
-      boxShadow: scrolled ? "0 4px 20px rgba(0,0,0,0.06)" : "none",
+      background: navSolid ? "rgba(255,255,255,0.97)" : "transparent",
+      backdropFilter: navSolid ? "blur(16px)" : "none",
+      borderBottom: navSolid ? "1px solid rgba(30,58,138,0.1)" : "none",
+      boxShadow: navSolid ? "0 4px 20px rgba(0,0,0,0.06)" : "none",
       padding: "0 5vw",
     }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70, gap: 8 }}>
-        {/* Logo */}
-        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
-          <img src={logo} alt="We Plan Trips" className="nav-logo" style={{ height: 57, width: "auto", objectFit: "contain" }} />
+      <div style={{ maxWidth: 1400, margin: "0 auto", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: NAV_HEIGHT, gap: 12 }}>
+        {/* Logo — white at top on hero routes, standard logo after scroll */}
+        <Link
+          to="/"
+          className="nav-logo-link"
+          style={{
+            position: "relative",
+            display: "block",
+            height: 52,
+            width: 148,
+            flexShrink: 0,
+            textDecoration: "none",
+          }}
+        >
+          <img
+            src={whiteLogo}
+            alt=""
+            aria-hidden
+            className="nav-logo"
+            style={{
+              position: "absolute",
+              left: 0,
+              top: "50%",
+              transform: "translateY(-50%)",
+              height: 52,
+              width: "auto",
+              maxWidth: 160,
+              objectFit: "contain",
+              opacity: showWhiteLogo ? 1 : 0,
+              transformOrigin: "left center",
+              transition: "opacity 0.4s ease, transform 0.4s ease",
+              pointerEvents: "none",
+            }}
+          />
+          <img
+            src={logo}
+            alt="We Plan Trips"
+            className="nav-logo"
+            style={{
+              position: "absolute",
+              left: 0,
+              top: "50%",
+              transform: `translateY(-50%) scale(${showWhiteLogo ? 0.96 : 1})`,
+              height: 52,
+              width: "auto",
+              maxWidth: 160,
+              objectFit: "contain",
+              opacity: showWhiteLogo ? 0 : 1,
+              transformOrigin: "left center",
+              transition: "opacity 0.4s ease, transform 0.4s ease",
+            }}
+          />
         </Link>
-        {/* Center: Search bar — always visible */}
-        <NavbarSearch scrolled={scrolled} />
-        {/* Desktop Links */}
+        {/* Center: Search bar */}
+        <NavbarSearch navSolid={navSolid} />
+        {/* Desktop Links with Dropdowns */}
         <div style={{ display: "flex", gap: 28, alignItems: "center", flexShrink: 0 }} className="desktop-nav">
-          {links.map(l => (
-            <a key={l.name} href={l.href} style={{
-              color: scrolled ? COLORS.primary : "rgba(255,255,255,0.9)",
+
+          {/* DESTINATIONS */}
+          <div
+            onMouseEnter={() => { clearTimeout(destTimeout.current); setDestOpen(true); }}
+            onMouseLeave={() => { destTimeout.current = setTimeout(() => setDestOpen(false), 180); }}
+            style={{ position: "relative" }}
+          >
+            <span className="nav-link-hover" style={{
+              color: destOpen ? COLORS.secondary : baseLinkColor,
               textDecoration: "none", fontSize: 12, letterSpacing: 2,
               fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
               transition: "color 0.3s", textTransform: "uppercase",
-              whiteSpace: "nowrap",
-            }}
-              onMouseOver={e => e.target.style.color = COLORS.secondary}
-              onMouseOut={e => e.target.style.color = scrolled ? COLORS.primary : "rgba(255,255,255,0.9)"}>{l.name}</a>
-          ))}
+              whiteSpace: "nowrap", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 5,
+            }}>
+              Destinations
+              <svg width="9" height="9" viewBox="0 0 10 10" fill="none" style={{ transition: "transform 0.3s", transform: destOpen ? "rotate(180deg)" : "rotate(0)" }}>
+                <path d="M2 4L5 7L8 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
+            {/* Mega dropdown */}
+            <div style={{
+              position: "fixed", top: NAV_HEIGHT, left: 0, right: 0,
+              background: "#fff",
+              borderBottom: "1px solid rgba(0,0,0,0.08)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+              opacity: destOpen ? 1 : 0,
+              pointerEvents: destOpen ? "auto" : "none",
+              transform: destOpen ? "translateY(0)" : "translateY(-6px)",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
+              zIndex: 300,
+              maxHeight: "60vh", overflowY: "auto",
+            }}>
+              <div style={{
+                display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                gap: 0, padding: "16px 5vw", maxWidth: 1200, margin: "0 auto",
+              }}>
+                {destinations.map(d => (
+                  <button key={d.slug}
+                    onClick={() => { setDestOpen(false); navigate(`/destination/${d.slug}`); }}
+                    style={{
+                      display: "block", width: "100%", padding: "12px 16px",
+                      border: "none", background: "transparent", cursor: "pointer",
+                      fontFamily: "'Montserrat', sans-serif", fontSize: 13, fontWeight: 500,
+                      color: COLORS.dark, textAlign: "left",
+                      borderRadius: 8, transition: "background 0.15s, color 0.15s",
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.background = COLORS.bgAlt; e.currentTarget.style.color = COLORS.primary; }}
+                    onMouseOut={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = COLORS.dark; }}
+                  >
+                    {d.name}
+                    <span style={{ display: "block", fontSize: 10, color: COLORS.muted, marginTop: 2, letterSpacing: 0.5 }}>{d.country}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* HOLIDAY PACKAGES */}
+          <div
+            onMouseEnter={() => { clearTimeout(pkgTimeout.current); setPkgOpen(true); }}
+            onMouseLeave={() => { pkgTimeout.current = setTimeout(() => setPkgOpen(false), 180); }}
+            style={{ position: "relative" }}
+          >
+            <span className="nav-link-hover" style={{
+              color: pkgOpen ? COLORS.secondary : baseLinkColor,
+              textDecoration: "none", fontSize: 12, letterSpacing: 2,
+              fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
+              transition: "color 0.3s", textTransform: "uppercase",
+              whiteSpace: "nowrap", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 5,
+            }}>
+              Holiday Packages
+              <svg width="9" height="9" viewBox="0 0 10 10" fill="none" style={{ transition: "transform 0.3s", transform: pkgOpen ? "rotate(180deg)" : "rotate(0)" }}>
+                <path d="M2 4L5 7L8 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
+            {/* Mega dropdown */}
+            <div style={{
+              position: "fixed", top: NAV_HEIGHT, left: 0, right: 0,
+              background: "#fff",
+              borderBottom: "1px solid rgba(0,0,0,0.08)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+              opacity: pkgOpen ? 1 : 0,
+              pointerEvents: pkgOpen ? "auto" : "none",
+              transform: pkgOpen ? "translateY(0)" : "translateY(-6px)",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
+              zIndex: 300,
+            }}>
+              <div style={{ padding: "16px 5vw", maxWidth: 1200, margin: "0 auto" }}>
+                {priceRanges.map(pr => (
+                  <button key={pr.path}
+                    onClick={() => { setPkgOpen(false); navigate(pr.path); }}
+                    style={{
+                      display: "block", width: "100%", padding: "14px 16px",
+                      border: "none", background: "transparent", cursor: "pointer",
+                      fontFamily: "'Montserrat', sans-serif", fontSize: 14, fontWeight: 500,
+                      color: COLORS.dark, textAlign: "left",
+                      borderRadius: 8, transition: "background 0.15s, color 0.15s",
+                      borderBottom: "1px solid rgba(0,0,0,0.04)",
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.background = COLORS.bgAlt; e.currentTarget.style.color = COLORS.primary; }}
+                    onMouseOut={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = COLORS.dark; }}
+                  >
+                    {pr.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ABOUT US */}
+          <Link to="/about" className="nav-link-hover" style={{
+            color: baseLinkColor,
+            textDecoration: "none", fontSize: 12, letterSpacing: 2,
+            fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
+            transition: "color 0.3s", textTransform: "uppercase",
+            whiteSpace: "nowrap",
+          }}>About Us</Link>
+
         </div>
         {/* Hamburger */}
         <button onClick={() => setMenuOpen(!menuOpen)} style={{
           display: "none", background: "none", border: "none",
-          color: scrolled ? COLORS.primary : "#fff", fontSize: 24, cursor: "pointer",
+          color: navSolid ? COLORS.primary : "#fff", fontSize: 24, cursor: "pointer",
           transition: "color 0.3s", flexShrink: 0,
         }} className="hamburger">☰</button>
       </div>
+
+      {/* Mobile Menu */}
       {menuOpen && (
         <div style={{
-          background: "rgba(255,255,255,0.98)", padding: "16px 0",
+          background: "rgba(255,255,255,0.98)", padding: "12px 5vw 16px",
           borderTop: `1px solid ${COLORS.bgAlt2}`,
           borderRadius: "0 0 16px 16px",
           boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          maxWidth: 1400, margin: "0 auto",
         }}>
-          {links.map(l => <a key={l.name} href={l.href} onClick={() => setMenuOpen(false)} style={{
+          {/* Destinations accordion */}
+          <button onClick={() => setMobileDestOpen(!mobileDestOpen)} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%",
+            color: COLORS.primary, padding: "14px 24px", border: "none", background: "transparent",
+            fontSize: 14, letterSpacing: 2, fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
+            textTransform: "uppercase", cursor: "pointer",
+          }}>
+            <span>Destinations</span>
+            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" style={{ transition: "transform 0.3s", transform: mobileDestOpen ? "rotate(180deg)" : "rotate(0)" }}>
+              <path d="M2 4L5 7L8 4" stroke={COLORS.primary} strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+          {mobileDestOpen && (
+            <div style={{ padding: "0 24px 8px 36px" }}>
+              {destinations.map(d => (
+                <a key={d.slug} href={`/destination/${d.slug}`}
+                  onClick={() => setMenuOpen(false)}
+                  style={{ display: "block", padding: "8px 0", color: COLORS.muted, fontSize: 13, textDecoration: "none", fontFamily: "'Montserrat', sans-serif" }}
+                >{d.name}</a>
+              ))}
+            </div>
+          )}
+
+          {/* Holiday Packages accordion */}
+          <button onClick={() => setMobilePkgOpen(!mobilePkgOpen)} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%",
+            color: COLORS.primary, padding: "14px 24px", border: "none", background: "transparent",
+            fontSize: 14, letterSpacing: 2, fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
+            textTransform: "uppercase", cursor: "pointer",
+          }}>
+            <span>Holiday Packages</span>
+            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" style={{ transition: "transform 0.3s", transform: mobilePkgOpen ? "rotate(180deg)" : "rotate(0)" }}>
+              <path d="M2 4L5 7L8 4" stroke={COLORS.primary} strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+          {mobilePkgOpen && (
+            <div style={{ padding: "0 24px 8px 36px" }}>
+              {priceRanges.map(pr => (
+                <a key={pr.path} href={pr.path}
+                  onClick={() => setMenuOpen(false)}
+                  style={{ display: "block", padding: "8px 0", color: COLORS.muted, fontSize: 13, textDecoration: "none", fontFamily: "'Montserrat', sans-serif" }}
+                >{pr.label}</a>
+              ))}
+            </div>
+          )}
+
+          {/* About Us */}
+          <a href="/about" onClick={() => setMenuOpen(false)} style={{
             display: "block", color: COLORS.primary, padding: "14px 24px",
             textDecoration: "none", fontSize: 14, letterSpacing: 2,
             fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
-            textTransform: "uppercase", transition: "background 0.2s",
-          }}
-            onMouseOver={e => e.target.style.background = COLORS.bgAlt}
-            onMouseOut={e => e.target.style.background = "transparent"}>{l.name}</a>)}
+            textTransform: "uppercase",
+          }}>About Us</a>
         </div>
       )}
+
       <style>{`
         @media(max-width:768px){ .desktop-nav{display:none!important} .hamburger{display:block!important} }
+        @media(max-width:1100px){ .navbar-search { max-width: 280px !important; } }
+        @media(max-width:900px){ .navbar-search { max-width: 200px !important; } }
         @media(max-width:768px){ .navbar-search { max-width: none!important; margin: 0 8px!important; } .navbar-search input { font-size: 12px!important; } .nav-search-placeholder { font-size: 11px!important; } }
+        .nav-link-hover:hover { color: ${COLORS.secondary} !important; }
       `}</style>
     </nav>
   );
@@ -393,176 +642,29 @@ function SectionTitle({ tag, title, sub }) {
 // ─── DESTINATION GALLERY (Scrollable Mosaic) ─────────────────────────────────
 
 const galleryDestinations = [
-  { name: "Bali", slug: "bali", tag: "Romance", img: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=85" },
-  { name: "Dubai", slug: "dubai", tag: "Luxury", img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=900&q=85" },
-  { name: "Northern Lights", slug: "northern-lights", tag: "Magical", img: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=900&q=85" },
-  { name: "Japan", slug: "japan", tag: "Culture", img: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=900&q=85" },
-  { name: "Greece", slug: "greece", tag: "History", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=900&q=85" },
-  { name: "Switzerland", slug: "switzerland", tag: "Scenic", img: "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=900&q=85" },
-  { name: "Turkey", slug: "turkey", tag: "Heritage", img: "https://images.unsplash.com/photo-1569949381669-ecf31ae8e613?w=900&q=85" },
-  { name: "Thailand", slug: "thailand", tag: "Exotic", img: "https://images.unsplash.com/photo-1528181304800-259b08848526?w=900&q=85" },
-  { name: "Paris", slug: "paris", tag: "Romance", img: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=900&q=85" },
+  { name: "Bali", slug: "bali", tag: "Romance", img: stockImages.bali.hero },
+  { name: "Dubai", slug: "dubai", tag: "Luxury", img: stockImages.dubai.hero },
+  { name: "Northern Lights", slug: "northern-lights", tag: "Magical", img: stockImages["northern-lights"].hero },
+  { name: "Japan", slug: "japan", tag: "Culture", img: stockImages.japan.hero },
+  { name: "Greece", slug: "greece", tag: "History", img: stockImages.greece.hero },
+  { name: "Singapore", slug: "singapore", tag: "Modern", img: stockImages.singapore.hero },
+  { name: "Mauritius", slug: "mauritius", tag: "Beach", img: stockImages.mauritius.hero },
+  { name: "Hong Kong", slug: "hong-kong", tag: "City", img: stockImages["hong-kong"].hero },
+  { name: "Almaty", slug: "almaty", tag: "Adventure", img: stockImages.almaty.hero },
 ];
 
-// Each "slide" shows 3 destinations in the mosaic frames
-function getSlideGroup(index) {
-  const len = galleryDestinations.length;
-  return [
-    galleryDestinations[index % len],
-    galleryDestinations[(index + 1) % len],
-    galleryDestinations[(index + 2) % len],
-  ];
-}
-
-function GalleryFrame({ dest, aspectRatio }) {
-  const navigate = useNavigate();
-  return (
-    <div
-      onClick={() => navigate(`/destination/${dest.slug}`)}
-      style={{
-        position: "relative", overflow: "hidden", cursor: "pointer",
-        borderRadius: 24,
-        aspectRatio: aspectRatio || "16 / 10",
-        boxShadow: "8px 8px 24px rgba(0,0,0,0.08), -4px -4px 14px rgba(255,255,255,0.7), inset 1px 1px 2px rgba(255,255,255,0.5)",
-        border: "1px solid rgba(0,0,0,0.04)",
-        transition: "box-shadow 0.3s, border 0.3s",
-      }}
-      onMouseOver={e => {
-        e.currentTarget.style.boxShadow = "12px 12px 32px rgba(30,58,138,0.16), -4px -4px 16px rgba(255,255,255,0.9)";
-        e.currentTarget.style.border = "1px solid rgba(30,58,138,0.2)";
-        const img = e.currentTarget.querySelector(".gf-img");
-        if (img) img.style.transform = "scale(1.06)";
-        const ov = e.currentTarget.querySelector(".gf-hover");
-        if (ov) ov.style.opacity = "1";
-      }}
-      onMouseOut={e => {
-        e.currentTarget.style.boxShadow = "8px 8px 24px rgba(0,0,0,0.08), -4px -4px 14px rgba(255,255,255,0.7), inset 1px 1px 2px rgba(255,255,255,0.5)";
-        e.currentTarget.style.border = "1px solid rgba(0,0,0,0.04)";
-        const img = e.currentTarget.querySelector(".gf-img");
-        if (img) img.style.transform = "scale(1)";
-        const ov = e.currentTarget.querySelector(".gf-hover");
-        if (ov) ov.style.opacity = "0";
-      }}
-    >
-      <img className="gf-img" src={dest.img} alt={dest.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease" }} loading="lazy" />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 45%, transparent 100%)" }} />
-      <div className="gf-hover" style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(30,58,138,0.3), rgba(249,115,22,0.12))", opacity: 0, transition: "opacity 0.4s" }} />
-      {/* Tag */}
-      <div style={{ position: "absolute", top: 16, right: 16, background: COLORS.secondary, padding: "6px 16px", borderRadius: 50 }}>
-        <span style={{ color: "#fff", fontSize: 10, fontFamily: "'Montserrat', sans-serif", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>{dest.tag}</span>
-      </div>
-      {/* Text */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "22px 24px" }}>
-        <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(20px, 2.2vw, 32px)", color: "#fff", fontWeight: 700, lineHeight: 1.15, marginBottom: 4, textShadow: "0 2px 12px rgba(0,0,0,0.35)" }}>{dest.name}</h3>
-        <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.75)", fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
-          <span>Explore</span><span style={{ fontSize: 14 }}>→</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function DestinationGallery() {
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [fade, setFade] = useState(true);
-  const [manualCount, setManualCount] = useState(0);
-  const autoRef = useRef(null);
-
-  const totalSlides = galleryDestinations.length;
-
-  const goTo = (newIndex, isManual = false) => {
-    if (!fade) return; // prevent rapid clicks
-    setFade(false);
-    setTimeout(() => {
-      setSlideIndex(((newIndex % totalSlides) + totalSlides) % totalSlides);
-      setFade(true);
-      if (isManual) setManualCount(c => c + 1);
-    }, 400);
-  };
-
-  // Auto-scroll after 2 manual interactions
-  useEffect(() => {
-    if (manualCount >= 2) {
-      autoRef.current = setInterval(() => {
-        goTo(slideIndex + 1);
-      }, 4000);
-      return () => clearInterval(autoRef.current);
-    }
-  }, [manualCount, slideIndex]);
-
-  const group = getSlideGroup(slideIndex);
-
-  // Prev / Next arrow style
-  const arrowStyle = {
-    position: "absolute", top: "50%", transform: "translateY(-50%)", zIndex: 10,
-    width: 48, height: 48, borderRadius: "50%",
-    background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,0,0,0.06)",
-    boxShadow: "4px 4px 14px rgba(0,0,0,0.08), -2px -2px 8px rgba(255,255,255,0.7)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    cursor: "pointer", fontSize: 20, color: COLORS.primary,
-    transition: "all 0.25s",
-  };
-
   return (
     <section id="packages" style={{ background: COLORS.bg, padding: "90px 5vw" }}>
-      <SectionTitle tag="✦ Explore Destinations" title="Travel Gallery" sub="Click on any destination to discover curated packages and plan your dream trip." />
+      <SectionTitle
+        tag="✦ Explore Destinations"
+        title="Travel Gallery"
+        sub="Hover a bar to reveal the full scene — others soften. On mobile, swipe and tap to expand, then tap again to open."
+      />
 
       <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto" }}>
-        {/* Prev Arrow */}
-        <button
-          onClick={() => goTo(slideIndex - 1, true)}
-          style={{ ...arrowStyle, left: -24 }}
-          onMouseOver={e => { e.currentTarget.style.background = COLORS.primary; e.currentTarget.style.color = "#fff"; }}
-          onMouseOut={e => { e.currentTarget.style.background = "rgba(255,255,255,0.9)"; e.currentTarget.style.color = COLORS.primary; }}
-        >←</button>
-
-        {/* Next Arrow */}
-        <button
-          onClick={() => goTo(slideIndex + 1, true)}
-          style={{ ...arrowStyle, right: -24 }}
-          onMouseOver={e => { e.currentTarget.style.background = COLORS.primary; e.currentTarget.style.color = "#fff"; }}
-          onMouseOut={e => { e.currentTarget.style.background = "rgba(255,255,255,0.9)"; e.currentTarget.style.color = COLORS.primary; }}
-        >→</button>
-
-        {/* 3-frame mosaic: 1 large left + 2 stacked right */}
-        <div className="gallery-mosaic" style={{
-          display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20,
-          opacity: fade ? 1 : 0,
-          transition: "opacity 0.4s ease",
-        }}>
-          {/* Frame 1: Large — uses aspect-ratio for stable sizing */}
-          <GalleryFrame dest={group[0]} aspectRatio="4 / 3" />
-          {/* Frame 2 & 3: Stacked — each uses aspect-ratio */}
-          <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", gap: 20 }}>
-            <GalleryFrame dest={group[1]} aspectRatio="16 / 9" />
-            <GalleryFrame dest={group[2]} aspectRatio="16 / 9" />
-          </div>
-        </div>
-
-        {/* Dots */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 32 }}>
-          {galleryDestinations.map((_, i) => (
-            <button key={i} onClick={() => goTo(i, true)} style={{
-              width: i === slideIndex ? 28 : 10, height: 10, borderRadius: 50,
-              background: i === slideIndex ? COLORS.primary : COLORS.bgAlt2,
-              border: "none", cursor: "pointer", transition: "all 0.3s",
-            }} />
-          ))}
-        </div>
-
-        {/* Auto-scroll hint */}
-        {manualCount < 2 && (
-          <p style={{
-            textAlign: "center", marginTop: 14,
-            fontFamily: "'Montserrat', sans-serif", fontSize: 11,
-            color: COLORS.muted, letterSpacing: 1,
-          }}>
-            Use arrows to browse · auto-play starts after a few scrolls
-          </p>
-        )}
+        <TravelGalleryBars destinations={galleryDestinations} />
       </div>
-
-
     </section>
   );
 }
@@ -660,10 +762,10 @@ function ExperienceCard({ item, index, visible }) {
 function Experiences() {
   const [ref, visible] = useScrollAnimation();
   const items = [
-    { icon: "🏄", title: "Special Activities", desc: "Snorkeling, hiking, skydiving — we book the extraordinary experiences you'll remember forever.", img: "https://images.unsplash.com/photo-1530053969600-caed2596d242?w=600&q=80" },
-    { icon: "🗺️", title: "Private Travel Planning", desc: "Bespoke itineraries crafted around your every preference by expert travel designers.", img: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80" },
-    { icon: "🏨", title: "Luxury Tours", desc: "Curated stays at the world's finest hotels, resorts, and hidden boutique retreats.", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80" },
-    { icon: "🌍", title: "Best Destinations", desc: "Expertly vetted bucket-list destinations across 40+ countries, handpicked for you.", img: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80" },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>, title: "Special Activities", desc: "Snorkeling, hiking, skydiving — we book the extraordinary experiences you'll remember forever.", img: stockImages.bali.gallery[0] },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>, title: "Private Travel Planning", desc: "Bespoke itineraries crafted around your every preference by expert travel designers.", img: stockImages.dubai.gallery[0] },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, title: "Luxury Tours", desc: "Curated stays at the world's finest hotels, resorts, and hidden boutique retreats.", img: stockImages.greece.gallery[0] },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>, title: "Best Destinations", desc: "Expertly vetted bucket-list destinations across 40+ countries, handpicked for you.", img: stockImages.japan.gallery[0] },
   ];
   return (
     <section ref={ref} id="tours" style={{ background: COLORS.bgAlt, padding: "90px 5vw" }}>
@@ -680,40 +782,14 @@ function Experiences() {
   );
 }
 
-// ─── PROMO BANNER ─────────────────────────────────────────────────────────────
 
-function PromoBanner() {
-  return (
-    <section style={{ position: "relative", overflow: "hidden", height: 380, borderRadius: 0 }}>
-      <img src="https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?w=1600&q=80" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-      <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, rgba(30,58,138,0.88), rgba(15,23,42,0.8))` }} />
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", textAlign: "center", padding: "0 20px" }}>
-        <div style={{ fontSize: 11, letterSpacing: 5, color: "rgba(255,255,255,0.7)", fontFamily: "'Montserrat', sans-serif", fontWeight: 600, textTransform: "uppercase", marginBottom: 12 }}>LIMITED TIME OFFER</div>
-        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(48px, 9vw, 110px)", color: "#fff", fontWeight: 700, lineHeight: 0.95, marginBottom: 8 }}>37% Off</h2>
-        <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 16, color: "rgba(255,255,255,0.8)", marginBottom: 32, letterSpacing: 1 }}>Last Minute Travel Deals — Book Before They're Gone</p>
-        <a href="#" style={{
-          display: "inline-block", background: "#fff", color: COLORS.primary,
-          padding: "14px 44px", borderRadius: 50, textDecoration: "none",
-          fontFamily: "'Montserrat', sans-serif", fontSize: 12, fontWeight: 700,
-          letterSpacing: 3, textTransform: "uppercase",
-          transition: "transform 0.2s, box-shadow 0.2s",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
-        }}
-          onMouseOver={e => { e.target.style.transform = "translateY(-3px)"; }}
-          onMouseOut={e => { e.target.style.transform = "translateY(0)"; }}>
-          View Deals
-        </a>
-      </div>
-    </section>
-  );
-}
 
 // ─── VIDEO SECTION ────────────────────────────────────────────────────────────
 
 function VideoSection() {
   return (
     <section style={{ position: "relative", height: 520, overflow: "hidden" }}>
-      <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&q=80" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+      <img src={stockImages.dubai.gallery[1]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
       <div style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.55)" }} />
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
         <div style={{
@@ -773,27 +849,65 @@ function Testimonials() {
   );
 }
 
-// ─── STATS ────────────────────────────────────────────────────────────────────
+// ─── STATS (with count-up) ────────────────────────────────────────────────────
+
+function useCountUp(target, visible, duration = 2000) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!visible) return;
+    let start = 0;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) { setValue(target); clearInterval(timer); }
+      else setValue(Math.floor(start));
+    }, 16);
+    return () => clearInterval(timer);
+  }, [visible, target, duration]);
+  return value;
+}
+
+function StatItem({ icon, target, suffix, label, index, visible }) {
+  const count = useCountUp(target, visible);
+  return (
+    <div style={{
+      textAlign: "center", opacity: visible ? 1 : 0,
+      transform: visible ? "translateY(0)" : "translateY(24px)",
+      transition: `all 0.6s ${index * 0.12}s`,
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 16, margin: "0 auto 16px",
+        background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {icon}
+      </div>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(36px, 5vw, 52px)", color: "#fff", fontWeight: 700, lineHeight: 1 }}>
+        {count}{suffix}
+      </div>
+      <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.7)", letterSpacing: 2, textTransform: "uppercase", marginTop: 8 }}>
+        {label}
+      </div>
+    </div>
+  );
+}
 
 function Stats() {
   const [ref, visible] = useScrollAnimation();
   const items = [
-    { val: "50K+", label: "Happy Travellers" },
-    { val: "120+", label: "Destinations" },
-    { val: "400+", label: "Packages" },
-    { val: "4.9★", label: "Average Rating" },
+    { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, target: 500, suffix: "+", label: "Happy Travellers" },
+    { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, target: 80, suffix: "+", label: "Destinations" },
+    { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>, target: 250, suffix: "+", label: "Packages" },
+    { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, target: 4.9, suffix: "", label: "Avg Rating" },
   ];
   return (
     <section ref={ref} className="stats-section" style={{
       background: `linear-gradient(135deg, ${COLORS.primary}, #2563eb)`,
-      padding: "70px 5vw",
+      padding: "80px 5vw",
     }}>
-      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 20, maxWidth: 900, margin: "0 auto" }}>
+      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, maxWidth: 960, margin: "0 auto" }}>
         {items.map((s, i) => (
-          <div key={s.label} style={{ textAlign: "center", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)", transition: `all 0.5s ${i * 0.1}s` }}>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(38px, 5vw, 56px)", color: "#fff", fontWeight: 700 }}>{s.val}</div>
-            <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.7)", letterSpacing: 2, textTransform: "uppercase", marginTop: 4 }}>{s.label}</div>
-          </div>
+          <StatItem key={s.label} icon={s.icon} target={s.target} suffix={s.suffix} label={s.label} index={i} visible={visible} />
         ))}
       </div>
     </section>
@@ -1104,7 +1218,6 @@ function HomePage() {
       <Stats />
       <DestinationGallery />
       <Experiences />
-      <PromoBanner />
       <VideoSection />
       <Testimonials />
       <ContactSection />
@@ -1208,27 +1321,66 @@ function SplashLoader({ onFinish }) {
   );
 }
 
+// ─── ROUTES (offset below fixed navbar on non-hero pages) ───────────────────
+
+function AppRoutes() {
+  const location = useLocation();
+  const padTop = location.pathname.startsWith("/packages/") ? NAV_HEIGHT : 0;
+  return (
+    <div style={{ paddingTop: padTop }}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/destination/:slug" element={<DestinationPage />} />
+        <Route path="/destination/:destSlug/package/:pkgSlug" element={<PackagePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/packages/:priceRange" element={<FilteredPackagesPage />} />
+      </Routes>
+    </div>
+  );
+}
+
 // ─── APP ────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [showLoader, setShowLoader] = useState(true);
+
+  // Smart scrollbar: show on scroll or when mouse near right edge
+  useEffect(() => {
+    let scrollTimer = null;
+    const showScrollbar = () => {
+      document.documentElement.classList.add("scrollbar-visible");
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        document.documentElement.classList.remove("scrollbar-visible");
+      }, 1200);
+    };
+    const handleScroll = () => showScrollbar();
+    const handleMouseMove = (e) => {
+      if (window.innerWidth - e.clientX < 30) showScrollbar();
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("mousemove", handleMouseMove);
+      clearTimeout(scrollTimer);
+    };
+  }, []);
 
   return (
     <BrowserRouter>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
-        html{scroll-behavior:smooth;}
-        body{background:#ffffff;color:#1a1a2e;overflow-x:hidden;}
-        ::-webkit-scrollbar{width:6px;}
-        ::-webkit-scrollbar-track{background:#f1f5f9;}
-        ::-webkit-scrollbar-thumb{background:#1E3A8A;border-radius:3px;}
+        html{scroll-behavior:smooth;overscroll-behavior:none;}
+        body{background:#ffffff;color:#1a1a2e;overflow-x:hidden;overscroll-behavior:none;}
         ::selection{background:rgba(30,58,138,0.2);}
 
         /* ─── MOBILE RESPONSIVE ──────────────────────── */
         @media(max-width: 768px) {
-          /* Navbar */
-          .nav-logo { height: 44px !important; }
+          /* Navbar logo stack */
+          .nav-logo-link { height: 44px !important; width: 128px !important; }
+          .nav-logo { height: 44px !important; max-width: 132px !important; }
 
           /* Hero */
           .hero-side-dots { display: none !important; }
@@ -1237,9 +1389,8 @@ export default function App() {
           .hero-ticker { display: none !important; }
           .hero-counter { bottom: 30px !important; font-size: 10px !important; }
 
-          /* Gallery mosaic */
-          .gallery-mosaic { grid-template-columns: 1fr !important; gap: 14px !important; }
-          .gallery-mosaic > div:nth-child(2) { gap: 14px !important; }
+          /* Travel gallery bars — horizontal scroll on small screens */
+          .travel-gallery-bars-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
           #packages > div:nth-child(2) > button:first-child { left: 4px !important; width: 38px !important; height: 38px !important; font-size: 16px !important; }
           #packages > div:nth-child(2) > button:nth-child(2) { right: 4px !important; width: 38px !important; height: 38px !important; font-size: 16px !important; }
 
@@ -1277,7 +1428,6 @@ export default function App() {
           .hero-content h1 { font-size: clamp(32px, 11vw, 42px) !important; }
           .hero-counter { bottom: 20px !important; }
           .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .gallery-mosaic > div:first-child { aspect-ratio: 3/2 !important; }
           .experiences-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
           .footer-dest-grid { grid-template-columns: 1fr !important; }
         }
@@ -1285,12 +1435,7 @@ export default function App() {
       {showLoader && <SplashLoader onFinish={() => setShowLoader(false)} />}
       <Navbar />
       <LeadOverlay />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/destination/:slug" element={<DestinationPage />} />
-        <Route path="/destination/:destSlug/package/:pkgSlug" element={<PackagePage />} />
-        <Route path="/about" element={<AboutPage />} />
-      </Routes>
+      <AppRoutes />
       <Footer />
     </BrowserRouter>
   );
